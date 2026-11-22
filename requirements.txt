@@ -1,0 +1,10 @@
+starlette>=0.37
+uvicorn>=0.30
+sse-starlette>=2.0
+numpy>=1.26
+# spraakherkenning op deze computer (gratis)
+faster-whisper>=1.1
+# YouTube-livestreams en -video's (inclusief yt-dlp-ejs)
+yt-dlp[default]
+# PDF-bestanden van de preektekst
+reportlab>=4.0

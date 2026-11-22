@@ -1,0 +1,5 @@
+# Alleen nodig bij een NVIDIA-videokaart; installeren.bat regelt dit automatisch.
+# Blackwell-kaarten (RTX 50, RTX PRO 2000/4000/6000 Blackwell) hebben CUDA 12.8 of nieuwer nodig.
+ctranslate2>=4.6
+nvidia-cublas-cu12>=12.8
+nvidia-cudnn-cu12>=9.8,<10

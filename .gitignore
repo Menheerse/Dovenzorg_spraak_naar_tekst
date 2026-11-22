@@ -1,0 +1,15 @@
+# eigen instellingen en sleutels
+config.toml
+# opgehaalde of eigen gegevens (worden op de computer zelf opgehaald)
+data/bijbel.json
+data/psalmen.json
+data/formulieren.json
+data/dienst-*.json
+data/henry.db
+data/vaste-teksten/
+# opnames en Python-omgeving
+opnames/
+.venv/
+__pycache__/
+*.pyc
+*.tmp.mp3

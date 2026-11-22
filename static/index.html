@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<meta name="description" content="Lees de preek live mee, met vertaling.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%234f46e5'/%3E%3Cpath d='M6 7h12v2H6zm0 4h12v2H6zm0 4h8v2H6z' fill='white'/%3E%3C/svg%3E">
+<title>Meelezen</title>
+<style>
+:root{
+  --primary:#4f46e5; --primary-strong:#4338ca; --on-primary:#fff;
+  --bg:#ffffff; --surface:#f4f4f9; --card:#ffffff; --text:#16172a; --muted:#55576e; --faint:#8a8ca3; --border:#dcdce6;
+  --accent-bg:#eef0ff; --ok:#15803d; --warn:#b45309; --err:#b91c1c;
+  --panel:#15162b; --panel-card:#1f2140; --panel-border:#33355c; --panel-muted:#c9cae0; --panel-tag:#2b2d52;
+  --schaal:1; --header-h:60px;
+  --ui: system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --lees: "Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Noto Serif",serif;
+  font-family:var(--ui); color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-thema=licht]){ --bg:#0f1020; --surface:#181a31; --card:#1a1c36; --text:#eeeef7; --muted:#b4b6cf; --faint:#8789a6;
+    --border:#2c2e4f; --primary:#818cf8; --primary-strong:#a5b4fc; --on-primary:#0f1020; --accent-bg:#23264a; --ok:#4ade80; --warn:#fbbf24; --err:#f87171; color-scheme:dark }
+}
+:root[data-thema=donker]{ --bg:#0f1020; --surface:#181a31; --card:#1a1c36; --text:#eeeef7; --muted:#b4b6cf; --faint:#8789a6;
+  --border:#2c2e4f; --primary:#818cf8; --primary-strong:#a5b4fc; --on-primary:#0f1020; --accent-bg:#23264a; --ok:#4ade80; --warn:#fbbf24; --err:#f87171; color-scheme:dark }
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font-size:1.0625rem;line-height:1.5;-webkit-text-size-adjust:100%;min-height:100dvh}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--primary);outline-offset:3px;border-radius:8px}
+[hidden]{display:none!important}
+.skip{position:absolute;left:8px;top:-60px;background:var(--primary);color:var(--on-primary);padding:10px 14px;border-radius:8px;z-index:100;text-decoration:none}
+.skip:focus{top:8px}
+svg.i{width:24px;height:24px;fill:currentColor;flex:none}
+
+/* ---------- kop ---------- */
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:6px;height:calc(var(--header-h) + env(safe-area-inset-top));
+  padding:env(safe-area-inset-top) 8px 0;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+.icon-btn{min-width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;gap:4px;border:0;background:transparent;border-radius:12px;cursor:pointer;padding:0 8px}
+.icon-btn:hover{background:var(--surface)}
+.taalpop{position:fixed;top:calc(var(--header-h) + env(safe-area-inset-top) + 4px);right:8px;z-index:60;width:min(290px,calc(100vw - 16px));max-height:min(70vh,520px);overflow:auto;background:var(--bg);border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.18);padding:8px;animation:taalIn .15s ease-out}
+@keyframes taalIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.taalpop{animation:none}}
+.taalpop-kop{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:8px 10px 6px}
+.taalpop-lijst button{display:flex;align-items:center;gap:10px;width:100%;min-height:46px;padding:8px 10px;border:0;background:none;border-radius:10px;font:inherit;font-size:1rem;color:var(--text);text-align:left;cursor:pointer}
+.taalpop-lijst button:hover,.taalpop-lijst button:focus-visible{background:var(--surface);outline:none}
+.taalpop-lijst button[aria-checked="true"]{background:var(--accent-bg);color:var(--primary-strong);font-weight:650}
+.taalpop-lijst .code{margin-left:auto;font-size:.75rem;font-weight:700;color:var(--muted)}
+.taalpop-lijst button[aria-checked="true"] .code::before{content:"✓ ";color:var(--primary-strong)}
+.taalpop-orig{display:flex;gap:10px;align-items:center;padding:10px;border-top:1px solid var(--border);margin-top:6px;font-size:.92rem}
+.taalpop-orig input{width:20px;height:20px}
+.taalpop-noot{font-size:.85rem;color:var(--muted);padding:6px 10px 8px;margin:0}
+.luisterknop{font-weight:650;font-size:.85rem;color:var(--primary-strong)}
+.luisterknop .golf{opacity:.35}
+.luisterknop[aria-pressed="true"]{background:var(--accent-bg)}
+.luisterknop[aria-pressed="true"] .golf{opacity:1;animation:golf 1.2s ease-in-out infinite}
+.luisterknop[aria-pressed="true"] .g2{animation-delay:.3s}
+.luisterknop.laden .golf{animation:golf .5s linear infinite}
+@keyframes golf{0%,100%{opacity:.25}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.luisterknop .golf{animation:none!important}}
+@media (max-width:380px){.luister-tekst{display:none}}
+.titel{flex:1;min-width:0;margin:0;font-size:1.1rem;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+button.kerkknop{display:flex;align-items:center;gap:2px;border:0;background:none;font-family:inherit;color:inherit;text-align:left;padding:6px 6px;margin-left:-6px;border-radius:10px;cursor:default;min-height:40px}
+button.kerkknop #titelNaam{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kerk-chev{width:20px;height:20px;flex:none;fill:currentColor;opacity:.6;display:none}
+button.kerkknop.wisselbaar{cursor:pointer}
+button.kerkknop.wisselbaar .kerk-chev{display:block}
+button.kerkknop.wisselbaar:hover{background:var(--surface)}
+button.kerkknop:focus-visible{outline:2px solid var(--primary);outline-offset:1px}
+.kerkpop{left:8px;right:auto}
+.kerkpop .taalpop-lijst button{min-height:56px;align-items:center}
+.kerkpop .kp-tekst{display:flex;flex-direction:column;gap:2px;min-width:0}
+.kerkpop .kp-tekst small{font-size:.8rem;font-weight:500;color:var(--muted)}
+.kerkpop .kp-punt{width:9px;height:9px;border-radius:50%;background:var(--faint);flex:none}
+.kerkpop .kp-punt[data-s="live"]{background:#16a34a}
+.kerkpop button[disabled]{opacity:.55;cursor:not-allowed}
+button.pil{border:0;font-family:inherit;cursor:pointer;min-height:36px}
+button.pil.terug::before{content:"‹";font-size:1.15em;line-height:1;margin-right:-2px;color:var(--text)}
+button.pil:hover{filter:brightness(.96);box-shadow:inset 0 0 0 1px var(--border)}
+button.pil:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.pil{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;font-weight:600;padding:5px 10px;border-radius:999px;background:var(--surface);color:var(--muted);white-space:nowrap}
+.pil i{width:8px;height:8px;border-radius:50%;background:var(--faint)}
+.pil[data-s=live]{color:var(--ok)} .pil[data-s=live] i{background:var(--ok);animation:knipper 1.6s infinite}
+.pil[data-s=vertraagd]{color:var(--warn)} .pil[data-s=vertraagd] i{background:var(--warn)}
+.pil[data-s=fout]{color:var(--err)} .pil[data-s=fout] i{background:var(--err)}
+@keyframes knipper{50%{opacity:.3}}
+.taalknop{font-weight:700;font-size:.85rem;text-transform:uppercase}
+
+/* ---------- menu ---------- */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:30}
+.lade{position:fixed;top:0;bottom:0;left:0;width:min(320px,88vw);background:var(--bg);z-index:31;overflow-y:auto;
+  padding:calc(env(safe-area-inset-top) + 12px) 12px calc(env(safe-area-inset-bottom) + 16px);
+  box-shadow:4px 0 24px rgba(0,0,0,.25);transform:translateX(-105%);transition:transform .25s ease}
+.lade.open{transform:none}
+.lade-kop{display:flex;align-items:center;justify-content:space-between;padding:0 0 6px 12px;font-size:1.1rem}
+.lade h2{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:18px 12px 8px}
+.nav{display:flex;align-items:center;gap:14px;min-height:52px;padding:8px 12px;border-radius:12px;color:var(--text);text-decoration:none}
+.nav:hover{background:var(--surface)}
+.nav[aria-current=page]{background:var(--accent-bg);color:var(--primary-strong);font-weight:650}
+.instel{padding:4px 12px 10px}
+.instel label.kop{display:block;font-weight:600;margin-bottom:6px}
+.instel select{width:100%;min-height:48px;padding:0 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.seg{display:flex;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;min-width:0;min-height:42px;font-size:.92rem;padding:0 4px;border:0;border-radius:9px;background:transparent;cursor:pointer;font-weight:550}
+.seg button[aria-pressed=true]{background:var(--card);color:var(--primary-strong);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.grootte{display:flex;align-items:center;gap:8px}
+.grootte button{width:48px;height:44px;border:1px solid var(--border);border-radius:12px;background:var(--surface);cursor:pointer;font-weight:700}
+.grootte output{flex:1;text-align:center;color:var(--muted)}
+.vink{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;cursor:pointer}
+.vink input{width:22px;height:22px;accent-color:var(--primary)}
+.notitie{font-size:.85rem;color:var(--muted);padding:0 12px}
+
+/* ---------- meelezen ---------- */
+main{padding:0 16px calc(110px + env(safe-area-inset-bottom))}
+.wacht{min-height:calc(100dvh - var(--header-h) - 140px);display:grid;place-items:center;text-align:center}
+.wacht h1{font-size:clamp(1.4rem,5vw,1.9rem);font-weight:450;margin:0 0 .4rem}
+.wacht p{color:var(--muted);margin:0 auto;max-width:30ch}
+.golf{display:flex;align-items:flex-end;justify-content:center;gap:6px;height:44px;margin-bottom:26px}
+.golf span{width:7px;height:14px;border-radius:4px;background:var(--primary);opacity:.85;animation:golf 1.6s ease-in-out infinite}
+.golf span:nth-child(2){animation-delay:.12s}.golf span:nth-child(3){animation-delay:.24s}.golf span:nth-child(4){animation-delay:.36s}.golf span:nth-child(5){animation-delay:.48s}
+.golf.stil span{animation:none;height:10px;opacity:.35}
+@keyframes golf{0%,100%{height:14px}50%{height:44px}}
+.melding{max-width:46rem;margin:14px auto 0;padding:10px 14px;border-radius:12px;background:var(--surface);color:var(--muted);font-size:.95rem;text-align:center}
+
+.lees{font-family:var(--lees);font-size:calc(1.22rem * var(--schaal));line-height:1.6;max-width:46rem;margin:0 auto}
+.kaarten{display:flex;flex-direction:column;gap:12px;padding-top:16px}
+.kaart{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px 18px;animation:in .35s ease-out}
+.kaart p{margin:0}
+.kaart .orig{margin-top:8px;padding-top:8px;border-top:1px dashed var(--border);font-size:.82em;color:var(--muted)}
+.kaart .tijd{display:block;font-family:var(--ui);font-size:.75rem;color:var(--faint);margin-bottom:4px}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.zin.wacht-op{color:var(--faint);font-style:italic}
+.zin.nieuw{animation:oplicht 1.6s ease-out}
+@keyframes oplicht{from{background:color-mix(in srgb,var(--primary) 22%,transparent)}to{background:transparent}}
+.kaart.muziek{background:var(--surface);border-style:dashed;text-align:center;font-family:var(--ui);color:var(--muted);padding:10px 18px}
+.kaart.muziek p{font-size:1rem;font-weight:600;letter-spacing:.01em}
+.kaart.muziek .tijd{margin-bottom:2px}
+/* muziek: compact als het voorbij is, groot en bewegend terwijl er gezongen wordt */
+.kaart.muziek .noten{display:none}
+.kaart.muziek.bezig{border:2px solid color-mix(in srgb,var(--primary) 45%,transparent);border-style:solid;background:var(--accent-bg);color:var(--primary-strong);padding:22px 12px 18px;margin:6px 0}
+.kaart.muziek.bezig p{font-size:clamp(1.6rem,7.5vw,2.6rem);font-weight:750;letter-spacing:.01em;line-height:1.2}
+.kaart.muziek.bezig .noten,.focus-zin.muziek .noten{display:flex;justify-content:space-around;align-items:flex-end;width:100%;height:clamp(64px,16vw,96px);margin-top:10px}
+.noten span{font-size:clamp(2rem,9vw,3.4rem);line-height:1;color:var(--primary);animation:zweef 1.6s ease-in-out infinite;display:inline-block;font-family:"Segoe UI Symbol","Noto Sans Symbols 2","Apple Symbols",var(--ui)}
+.noten span:nth-child(even){color:var(--primary-strong);animation-name:zweef2}
+@keyframes zweef{0%,100%{transform:translateY(0) rotate(-6deg);opacity:.55}50%{transform:translateY(-26px) rotate(6deg);opacity:1}}
+@keyframes zweef2{0%,100%{transform:translateY(-22px) rotate(8deg);opacity:1}50%{transform:translateY(0) rotate(-8deg);opacity:.55}}
+.focus-zin.muziek{font-family:var(--ui);color:var(--primary-strong);text-align:center;font-weight:750;font-size:calc(clamp(2rem,9vw,3rem) * var(--schaal))}
+.historie p.muziek{font-family:var(--ui);font-style:italic;font-size:.85em;text-align:center}
+.deel{max-width:46rem;margin:12px auto 0;font-family:var(--lees);font-size:calc(1.1rem * var(--schaal));color:var(--muted);padding:0 18px}
+.deel::after{content:"";display:inline-block;width:2px;height:1em;background:var(--primary);margin-left:3px;vertical-align:-.15em;animation:knipper 1s infinite}
+
+.focus{display:flex;flex-direction:column;min-height:calc(100dvh - var(--header-h) - 120px);max-width:46rem;margin:0 auto;padding-top:12px}
+.historie{max-height:32vh;overflow-y:auto;background:var(--surface);border-radius:14px;padding:10px 14px;font-family:var(--lees);
+  font-size:calc(.95rem * var(--schaal));color:var(--muted);mask-image:linear-gradient(to bottom,transparent,#000 28px)}
+.historie p{margin:.35em 0}
+.focus-hoofd{flex:1;display:flex;flex-direction:column;justify-content:center;padding:24px 4px}
+.focus-zin{font-family:var(--lees);font-size:calc(clamp(1.6rem,6.2vw,2.4rem) * var(--schaal));line-height:1.4;margin:0;animation:in .35s ease-out}
+.focus-orig{margin-top:14px;color:var(--muted);font-family:var(--lees);font-size:calc(1.05rem * var(--schaal))}
+.focus .deel{margin:18px 0 0;padding:0}
+
+.naar-nieuw{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));z-index:15;
+  border:0;border-radius:999px;background:var(--primary);color:var(--on-primary);padding:10px 18px;min-height:44px;font-weight:600;box-shadow:0 6px 18px rgba(0,0,0,.25);cursor:pointer}
+
+.scherm-hint{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:14;margin:0 auto;max-width:28rem;
+  display:flex;align-items:center;gap:10px;padding:10px 10px 10px 16px;border-radius:16px;background:var(--surface);border:1px solid var(--border);
+  box-shadow:0 4px 16px rgba(0,0,0,.12);font-size:.95rem}
+.scherm-hint span{flex:1}
+.scherm-hint button{border:0;background:transparent;min-width:44px;min-height:44px;border-radius:10px;cursor:pointer;color:var(--muted)}
+
+/* ---------- downloaden ---------- */
+.download-knoppen{display:flex;gap:8px;padding:0 12px}
+.download-knoppen.midden{justify-content:center;padding:10px 0 2px;flex-wrap:wrap}
+.melding p{margin:0}
+.dl-knop{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 14px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text);text-decoration:none;font-weight:600}
+.melding .dl-knop{flex:none;background:var(--card)}
+.dl-knop:hover{border-color:var(--primary)}
+.dl-knop.bezig{opacity:.6;pointer-events:none}
+.download .notitie{margin-top:6px}
+
+/* ---------- bijbellinks en -venster ---------- */
+a.bl{color:inherit;text-decoration:underline;text-decoration-color:var(--primary);text-decoration-thickness:2px;text-underline-offset:3px;border-radius:4px}
+a.bl.citaat{text-decoration-style:dotted;text-decoration-thickness:2px}
+a.bl:hover{background:var(--accent-bg)}
+a.bl-label{display:inline-block;font-family:var(--ui);font-size:.72em;font-weight:650;line-height:1.2;color:var(--primary-strong);background:var(--accent-bg);border-radius:999px;padding:2px 8px;text-decoration:none;vertical-align:.12em;white-space:nowrap}
+a.psalm-label{background:var(--surface);border:1px solid var(--accent-bg)}
+.historie a.bl-label{font-size:.75em}
+.bijbel-venster{border:0;padding:0;width:min(640px,100vw);max-width:100vw;max-height:min(82dvh,760px);margin:auto auto 0;border-radius:22px 22px 0 0;background:var(--bg);color:var(--text);box-shadow:0 -8px 40px rgba(0,0,0,.3);display:none;flex-direction:column}
+.bijbel-venster[open]{display:flex;animation:omhoog .25s ease-out}
+@media (min-width:700px){.bijbel-venster{margin:auto;border-radius:22px}}
+.bijbel-venster::backdrop{background:rgba(8,9,20,.55)}
+@keyframes omhoog{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.bv-kop{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 10px 10px 20px;border-bottom:1px solid var(--border)}
+.bv-kop small{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.06em}
+.bv-kop h2{margin:0;font-size:1.25rem}
+.bv-verzen{overflow-y:auto;padding:16px 20px;flex:1;max-width:none}
+.bv-voet{display:flex;justify-content:space-between;gap:8px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--border)}
+.bv-voet button{border:1px solid var(--border);background:var(--surface);border-radius:12px;min-height:44px;padding:0 14px;cursor:pointer;font-weight:550}
+.bv-voet #bvVolgende{margin-left:auto}
+
+/* ---------- startscherm: kerk kiezen ---------- */
+.startscherm{max-width:34rem;margin:0 auto;padding:28px 0 20px}
+.start-kop{text-align:center;margin-bottom:22px}
+.start-logo{width:64px;height:64px;border-radius:20px;background:var(--primary);display:grid;place-items:center;margin:0 auto 14px;box-shadow:0 8px 24px color-mix(in srgb,var(--primary) 35%,transparent)}
+.start-logo svg{width:34px;height:34px;fill:var(--on-primary)}
+.start-kop h1{font-size:1.65rem;margin:0 0 .3rem;letter-spacing:-.01em}
+.start-kop p{color:var(--muted);margin:0}
+.kerken{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.kerk-knop{width:100%;display:flex;align-items:center;gap:14px;text-align:left;background:var(--card);border:2px solid var(--border);border-radius:18px;padding:16px;cursor:pointer;transition:border-color .2s,transform .2s}
+.kerk-knop:hover{border-color:var(--primary);transform:translateY(-1px)}
+.kerk-knop[aria-current=true]{border-color:var(--primary)}
+.kerk-ico{flex:none;width:48px;height:48px;border-radius:14px;background:var(--accent-bg);display:grid;place-items:center}
+.kerk-ico svg{width:26px;height:26px;fill:var(--primary-strong)}
+.kerk-tekst{flex:1;min-width:0}
+.kerk-tekst strong{display:block;font-size:1.1rem;line-height:1.3}
+.kerk-tekst span{display:block;color:var(--muted);font-size:.9rem}
+.kerk-tekst .kerk-status{display:inline-block;margin-top:6px;font-size:.78rem;font-weight:700;padding:5px 10px;border-radius:999px;background:var(--surface);color:var(--muted);white-space:nowrap}
+.kerk-status[data-s=live]{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.kerk-status[data-s=live]::before{content:"● ";animation:knipper 1.6s infinite}
+.kerk-pijl{flex:none;width:20px;height:20px;fill:var(--faint)}
+.start-voet{text-align:center;color:var(--faint);font-size:.85rem;margin-top:18px}
+.nav small{display:block;color:var(--muted);font-size:.85rem;font-weight:400}
+
+/* ---------- bijbel ---------- */
+.bijbel{max-width:46rem;margin:0 auto;padding-top:18px}
+.bijbel-keuze{margin-bottom:16px}
+.b-zoek{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:0 12px;margin-bottom:16px}
+.b-zoek:focus-within{border-color:var(--primary)}
+.b-zoek .i{color:var(--muted)}
+.b-zoek input{flex:1;border:0;background:transparent;min-height:48px;outline:none;min-width:0}
+.b-kop{display:flex;align-items:center;gap:6px;margin:0 0 12px}
+.b-kop h2{margin:0;font-size:1.3rem;flex:1}
+.b-terug{border:0;background:transparent;color:var(--primary-strong);font-weight:600;min-height:44px;padding:0 10px 0 4px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:2px}
+.b-terug:hover{background:var(--surface)}
+.b-testament{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:18px 0 8px}
+.b-boeken{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px}
+.b-boeken button{text-align:left;border:1px solid var(--border);background:var(--card);border-radius:12px;padding:10px 12px;min-height:46px;cursor:pointer;font-weight:550;line-height:1.25}
+.b-boeken button:hover,.b-hoofdstukken button:hover{border-color:var(--primary)}
+.b-hoofdstukken{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px}
+.b-hoofdstukken button{border:1px solid var(--border);background:var(--card);border-radius:12px;min-height:50px;cursor:pointer;font-weight:600;font-size:1rem}
+.b-tekst{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 20px}
+.b-nav{display:flex;justify-content:space-between;gap:8px;margin-top:14px}
+.b-nav button{border:1px solid var(--border);background:var(--surface);border-radius:12px;min-height:46px;padding:0 14px;cursor:pointer;font-weight:550}
+.b-nav button:last-child{margin-left:auto}
+.b-resultaat{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--border);background:none;padding:12px 4px;cursor:pointer}
+.b-resultaat strong{display:block;font-family:var(--ui);font-size:.85rem;color:var(--primary-strong);margin-bottom:2px}
+.b-resultaat span{font-family:var(--lees);font-size:calc(1rem * var(--schaal))}
+.b-resultaat mark{background:var(--accent-bg);color:inherit;border-radius:3px;padding:0 1px}
+.b-melding{color:var(--muted);padding:8px 2px}
+.p-nummers{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px}
+.p-nummers button{border:1px solid var(--border);background:var(--card);border-radius:12px;min-height:50px;cursor:pointer;font-weight:600;font-size:1rem}
+.p-nummers button:hover,.p-gezangen button:hover{border-color:var(--primary)}
+.p-gezangen{display:flex;flex-direction:column;gap:8px}
+.p-gezangen button{text-align:left;border:1px solid var(--border);background:var(--card);border-radius:12px;padding:12px 14px;min-height:48px;cursor:pointer;font-weight:550}
+.p-vers{display:grid;grid-template-columns:2.2em 1fr;gap:4px;margin:0 0 1.1em;border-radius:10px;padding:4px 6px 4px 0}
+.p-vers.licht{background:var(--accent-bg)}
+.p-vers b{font-family:var(--ui);color:var(--primary-strong);font-size:.85em;text-align:right;padding-right:6px;padding-top:.2em}
+.p-vers div{white-space:pre-line}
+.vk-keuze{margin:0 0 12px}
+button.vers-nr{font-family:var(--ui);font-size:.68em;font-weight:700;color:var(--primary-strong);background:var(--accent-bg);border:0;border-radius:6px;padding:1px 6px;margin-right:5px;vertical-align:.35em;cursor:pointer;line-height:1.4;text-decoration:underline dotted;text-underline-offset:2px}
+button.vers-nr:hover{background:var(--primary);color:var(--on-primary)}
+.vk-hint{font-family:var(--ui);font-size:.82rem;color:var(--muted);margin:0 0 12px}
+.vk-bij{font-family:var(--ui);font-size:.75rem;font-weight:600;color:var(--on-primary);background:var(--primary);border-radius:999px;padding:2px 8px;margin-left:8px;vertical-align:.1em}
+.vk-deel{border-bottom:1px solid var(--border);padding:4px 0;scroll-margin-top:calc(var(--header-h) + 16px)}
+.vk-deel:last-of-type{border-bottom:0}
+.vk-deel summary{cursor:pointer;font-family:var(--ui);font-weight:650;color:var(--primary-strong);padding:10px 2px;list-style-position:outside}
+.vk-deel p{margin:0 0 .8em;font-size:calc(1.02rem * var(--schaal));line-height:1.6}
+.vk-deel[open] summary{margin-bottom:4px}
+.bv-voet #bvVerklaring{margin:0 auto}
+.f-tekst p{margin:0 0 1em}
+.f-tekst p.f-kop{font-family:var(--ui);font-weight:700;font-size:.95rem;margin-top:1.4em}
+.p-bron{font-family:var(--ui);font-size:.8rem;color:var(--faint);margin-top:18px}
+.bijbel-kop h1{font-size:1.4rem;margin:0}
+.bijbel-kop p{margin:.2rem 0 0;color:var(--muted)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:16px 0 12px;scrollbar-width:none}
+.tabs button{flex:none;border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:8px 14px;min-height:42px;cursor:pointer;font-weight:550;white-space:nowrap}
+.tabs button[aria-selected=true]{background:var(--primary);border-color:transparent;color:var(--on-primary)}
+.blad{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 20px}
+.blad h2{font-family:var(--ui);font-size:1.05rem;margin:0 0 2px}
+.blad .sub{font-family:var(--ui);color:var(--muted);font-size:.9rem;margin:0 0 12px}
+.vers{margin:0 0 .5em}
+.vers sup{font-family:var(--ui);font-size:.65em;color:var(--primary-strong);font-weight:700;margin-right:4px}
+.vers.licht{background:var(--accent-bg);border-radius:8px;padding:2px 6px;margin-left:-6px}
+.vraag{font-weight:650;margin-bottom:.6em}
+.vrije{white-space:pre-line}
+
+/* ---------- keuzescherm ---------- */
+.kiezer{position:fixed;inset:0;z-index:50;background:rgba(8,9,20,.82);overflow-y:auto;overscroll-behavior:contain;display:flex;justify-content:center;align-items:flex-start;
+  padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))}
+.kiezer-paneel{width:100%;max-width:760px;margin:auto 0;background:var(--panel);color:#fff;border-radius:24px;padding:26px 20px 20px;animation:in .35s ease-out}
+.kiezer-paneel h2{text-align:center;font-size:1.55rem;margin:0 0 .4rem}
+.kiezer-paneel>p{text-align:center;color:var(--panel-muted);margin:0 auto 18px;max-width:440px}
+.kiezer-taal{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:18px;flex-wrap:wrap}
+.kiezer-taal select{min-height:46px;border-radius:12px;padding:0 12px;background:var(--panel-card);border:1px solid var(--panel-border);color:#fff}
+.opties{display:grid;gap:14px;grid-template-columns:1fr}
+@media (min-width:640px){.opties{grid-template-columns:1fr 1fr}.kiezer{align-items:center}}
+@media (min-width:900px){.opties{grid-template-columns:1fr 1fr 1fr}.kiezer-paneel{max-width:980px}}
+.voorbeeld.d{gap:6px;padding:12px 16px}.voorbeeld.d i{height:6px;background:#818cf8;opacity:.75}
+.voorbeeld.d i:nth-child(1){width:96%}.voorbeeld.d i:nth-child(2){width:100%}.voorbeeld.d i:nth-child(3){width:92%}.voorbeeld.d i:nth-child(4){width:55%}
+/* weergave Doorlopend: een verhaal in alinea's */
+.doorlopend .kaarten{gap:0;padding-top:20px}
+.doorlopend .kaart{background:none;border:0;border-radius:0;padding:0;margin:0 0 1.1em;animation:none}
+.doorlopend .kaart p{hyphens:auto;-webkit-hyphens:auto;text-wrap:pretty}
+.doorlopend .kaart .orig{border-top:0;margin-top:.3em;padding-top:0}
+.doorlopend .kaart.muziek:not(.bezig){display:flex;align-items:center;gap:12px;margin:.4em 0 1.4em;padding:0;background:none;border:0}
+.doorlopend .kaart.muziek:not(.bezig)::before,.doorlopend .kaart.muziek:not(.bezig)::after{content:"";flex:1;height:1px;background:var(--border)}
+.doorlopend .kaart.muziek.bezig{margin:.6em 0 1.4em;border-radius:18px;padding:22px 12px 18px}
+.doorlopend .kaart.muziek:not(.bezig) p{font-size:.9rem;font-weight:500;font-style:italic}
+.doorlopend .zin.nieuw{animation:oplicht 2.4s ease-out}
+.doorlopend .deel{padding:0}
+.optie{position:relative;text-align:left;background:var(--panel-card);border:2px solid var(--panel-border);border-radius:20px;padding:0;cursor:pointer;color:#fff;overflow:hidden;transition:border-color .2s,transform .2s}
+.optie:hover{border-color:#818cf8;transform:translateY(-2px)}
+.optie:focus-visible{outline:3px solid #a5b4fc;outline-offset:3px}
+.voorbeeld{height:80px;margin:14px 14px 0;border-radius:12px;background:#0f1020;padding:12px;display:flex;flex-direction:column;gap:7px;justify-content:center}
+.voorbeeld i{display:block;height:8px;border-radius:4px;background:#6366f1}
+.voorbeeld.k i:nth-child(1){width:80%}.voorbeeld.k i:nth-child(2){width:65%;opacity:.8}.voorbeeld.k i:nth-child(3){width:72%;opacity:.6}
+.voorbeeld.f i.h{height:16px;background:#2b2d52}.voorbeeld.f i.m{height:12px;width:62%;margin:6px auto 0;background:#818cf8}
+.optie div.tekst{padding:14px 18px 18px}
+.optie h3{margin:0 0 6px;font-size:1.15rem}
+.optie p{margin:0;color:var(--panel-muted);font-size:.95rem}
+.optie .badge{position:absolute;top:12px;right:12px;background:#6366f1;color:#fff;font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:999px}
+
+.toast{position:fixed;left:50%;top:calc(var(--header-h) + 14px + env(safe-area-inset-top));transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:.95rem;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60;max-width:90vw}
+.toast.toon{opacity:1}
+
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<a class="skip" href="#inhoud">Naar de tekst</a>
+
+<header>
+  <button class="icon-btn" id="menuKnop" aria-label="Menu openen" aria-expanded="false" aria-controls="lade">
+    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+  </button>
+  <button type="button" class="titel kerkknop" id="titel" aria-haspopup="true" aria-expanded="false" aria-controls="kerkPop"><span id="titelNaam">Meelezen</span><svg class="kerk-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M7.4 8.6L12 13.2l4.6-4.6L18 10l-6 6-6-6z"/></svg></button>
+  <button type="button" class="pil" id="pil" aria-label="Terug naar de preek"><i></i><span id="pilTekst" role="status">Verbinden…</span></button>
+  <button class="icon-btn luisterknop" id="luisterKnop" aria-label="Geluid van de dienst afspelen" aria-pressed="false" hidden>
+    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3z"/><path class="golf g1" d="M14 8.2a4.5 4.5 0 010 7.6V8.2z"/><path class="golf g2" d="M14 3.3v2.1a7 7 0 010 13.2v2.1a9 9 0 000-17.4z"/></svg>
+    <span class="luister-tekst" id="luisterTekst">Luister</span>
+  </button>
+  <button class="icon-btn taalknop" id="taalKnop" aria-label="Taal kiezen" aria-haspopup="true" aria-expanded="false" aria-controls="taalPop">
+    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 100 20 10 10 0 000-20m6.9 6h-2.9a15.7 15.7 0 00-1.4-3.6A8 8 0 0118.9 8M12 4c.8 1.2 1.5 2.5 1.9 4h-3.8c.4-1.5 1.1-2.8 1.9-4M4.3 14a8.2 8.2 0 010-4h3.4a16.5 16.5 0 000 4zm.8 2H8c.3 1.3.8 2.5 1.4 3.6A8 8 0 015.1 16M8 8H5.1a8 8 0 014.3-3.6C8.8 5.5 8.3 6.7 8 8m4 12c-.8-1.2-1.5-2.5-1.9-4h3.8c-.4 1.5-1.1 2.8-1.9 4m2.3-6H9.7a14.7 14.7 0 010-4h4.6a14.7 14.7 0 010 4m.3 5.6c.6-1.1 1.1-2.3 1.4-3.6h2.9a8 8 0 01-4.3 3.6m1.7-5.6a16.5 16.5 0 000-4h3.4a8.2 8.2 0 010 4z"/></svg>
+    <span id="taalCode">NL</span>
+  </button>
+</header>
+
+<div class="scrim" id="scrim" hidden></div>
+<nav class="lade" id="lade" aria-label="Menu en instellingen" inert>
+  <div class="lade-kop"><strong>Menu</strong><button class="icon-btn" id="ladeDicht" aria-label="Menu sluiten">
+    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.4L17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z"/></svg></button></div>
+  <a class="nav" href="/" data-pagina="live">
+    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 10a2 2 0 110 4 2 2 0 010-4M7.3 7.3l1.4 1.4a4.7 4.7 0 000 6.6l-1.4 1.4a6.7 6.7 0 010-9.4m9.4 0a6.7 6.7 0 010 9.4l-1.4-1.4a4.7 4.7 0 000-6.6zM4.5 4.5l1.4 1.4a8.7 8.7 0 000 12.2l-1.4 1.4a10.7 10.7 0 010-15m15 0a10.7 10.7 0 010 15l-1.4-1.4a8.7 8.7 0 000-12.2z"/></svg>
+    Preek meelezen</a>
+  <a class="nav" href="/?kies" data-pagina="kerk" id="navKerk" hidden>
+    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 2h2v3h3v2h-3v2.2l6 3.3V22h-6v-4a2 2 0 00-4 0v4H3v-9.5l6-3.3V7H6V5h3V2z"/></svg>
+    <span>Andere kerk kiezen<small id="navKerkNaam"></small></span></a>
+  <a class="nav" href="/bijbel" data-pagina="bijbel">
+    <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 2l-5 4.5v11l5-4.5zM6.5 5C4.6 5 2.5 5.4 1 6.5v14.7c1.5-1 3.6-1.5 5.5-1.5s3.9.4 5.5 1.5V6.5C10.5 5.4 8.4 5 6.5 5M21 18.5V7c-.7-.3-1.4-.5-2-.6v12c1.1.3 2 .6 2 .6z"/></svg>
+    Bijbel</a>
+
+  <div class="download" id="downloadMenu" hidden>
+    <h2>Preektekst downloaden</h2>
+    <div class="download-knoppen">
+      <a class="dl-knop" data-formaat="pdf" href="#" download><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm-1 7V3.5L18.5 9zM8 13h2.5a1.5 1.5 0 010 3H9v2H8zm1 1v1h1.5a.5.5 0 000-1zm4-1h1.5a2 2 0 012 2v1a2 2 0 01-2 2H13zm1 1v3h.5a1 1 0 001-1v-1a1 1 0 00-1-1z"/></svg>PDF</a>
+      <a class="dl-knop" data-formaat="docx" href="#" download><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zm-1 7V3.5L18.5 9zM7 13h1.2l.8 3.2.9-3.2h1.2l.9 3.2.8-3.2H14l-1.4 5h-1.2l-.9-3.1-.9 3.1H8.4z"/></svg>Word</a>
+    </div>
+    <p class="notitie">De hele tekst van deze dienst tot nu toe, in de gekozen taal.</p>
+  </div>
+
+  <h2>Instellingen</h2>
+  <div class="instel">
+    <label class="kop" for="taal">Taal / Language</label>
+    <select id="taal"></select>
+  </div>
+  <label class="vink" id="origRij" hidden><input type="checkbox" id="origineel"> Ook de Nederlandse tekst tonen</label>
+  <div class="instel">
+    <span class="kop" style="display:block;font-weight:600;margin-bottom:6px">Weergave</span>
+    <div class="seg" role="group" aria-label="Weergave">
+      <button data-weergave="klassiek" aria-pressed="false">Klassiek</button>
+      <button data-weergave="doorlopend" aria-pressed="false">Doorlopend</button>
+      <button data-weergave="focus" aria-pressed="false">Focus</button>
+    </div>
+  </div>
+  <div class="instel" id="geluidInstel" hidden>
+    <span class="kop" style="display:block;font-weight:600;margin-bottom:6px">Geluid</span>
+    <div class="seg" role="group" aria-label="Geluid">
+      <button data-geluid="gelijk" aria-pressed="true">Gelijk met tekst</button>
+      <button data-geluid="direct" aria-pressed="false">Direct (live)</button>
+    </div>
+  </div>
+  <div class="instel">
+    <span class="kop" style="display:block;font-weight:600;margin-bottom:6px">Lettergrootte</span>
+    <div class="grootte">
+      <button id="kleiner" aria-label="Kleiner">A−</button><output id="grootteWaarde">100%</output><button id="groter" aria-label="Groter">A+</button>
+    </div>
+  </div>
+  <div class="instel">
+    <span class="kop" style="display:block;font-weight:600;margin-bottom:6px">Kleuren</span>
+    <div class="seg" role="group" aria-label="Kleuren">
+      <button data-thema="auto" aria-pressed="false">Automatisch</button>
+      <button data-thema="licht" aria-pressed="false">Licht</button>
+      <button data-thema="donker" aria-pressed="false">Donker</button>
+    </div>
+  </div>
+  <label class="vink"><input type="checkbox" id="schermAan" checked> Scherm aan laten tijdens de dienst</label>
+  <p class="notitie" id="schermNotitie" hidden></p>
+</nav>
+
+<main id="inhoud">
+  <section id="paginaKerk" class="startscherm" hidden aria-labelledby="startTitel">
+    <div class="start-kop">
+      <div class="start-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M11 2h2v3h3v2h-3v2.2l6 3.3V22h-6v-4a2 2 0 00-4 0v4H3v-9.5l6-3.3V7H6V5h3V2z"/></svg></div>
+      <h1 id="startTitel">Preek meelezen</h1>
+      <p>Kies de kerk waarvan u de dienst wilt meelezen.</p>
+    </div>
+    <ul class="kerken" id="kerkLijst"></ul>
+    <p class="start-voet">Uw keuze wordt onthouden. Wisselen kan later via het menu.</p>
+  </section>
+  <section id="paginaLive">
+    <div class="wacht" id="wacht">
+      <div>
+        <div class="golf" id="golf" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+        <h1 id="wachtTitel">Welkom</h1>
+        <p id="wachtTekst">Verbinden…</p>
+      </div>
+    </div>
+    <div id="klassiek" class="lees" hidden>
+      <div class="kaarten" id="kaarten"></div>
+      <p class="deel" id="deelK" hidden></p>
+    </div>
+    <div id="focus" class="focus" hidden>
+      <div class="historie" id="historie" aria-label="Eerdere tekst"></div>
+      <div class="focus-hoofd">
+        <p class="focus-zin" id="focusZin" aria-live="polite"></p>
+        <p class="focus-orig" id="focusOrig" lang="nl" hidden></p>
+        <p class="deel" id="deelF" hidden></p>
+      </div>
+    </div>
+    <div class="melding" id="afgelopen" hidden>
+      <p>De uitzending is afgelopen.</p>
+      <div class="download-knoppen midden">
+        <a class="dl-knop" data-formaat="pdf" href="#" download>Preek als PDF</a>
+        <a class="dl-knop" data-formaat="docx" href="#" download>Als Word</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="paginaBijbel" class="bijbel" hidden>
+    <div class="seg bijbel-keuze" role="group" aria-label="Bijbel" id="bijbelKeuze">
+      <button data-bdeel="dienst" aria-pressed="false" id="knopDienst">Bij de dienst</button>
+      <button data-bdeel="bijbel" aria-pressed="true">Bijbel</button>
+      <button data-bdeel="psalmen" aria-pressed="false">Psalmen</button>
+      <button data-bdeel="formulieren" aria-pressed="false">Formulieren</button>
+    </div>
+    <div id="dienstDeel" hidden>
+      <div class="bijbel-kop"><h1 id="bijbelTitel">Bij de dienst</h1><p id="bijbelSub"></p></div>
+      <div class="tabs" role="tablist" id="tabs" aria-label="Onderdelen van de dienst"></div>
+      <article class="blad lees" id="blad" role="tabpanel"></article>
+    </div>
+    <div id="bijbelDeel">
+      <form class="b-zoek" id="bZoekForm" role="search">
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input type="search" id="bZoek" placeholder="Zoek: Johannes 3:16 of een woord" aria-label="Zoek een bijbeltekst of woord" enterkeyhint="search" autocomplete="off">
+      </form>
+      <div id="bInhoud" class="b-inhoud"></div>
+    </div>
+    <div id="psalmDeel" hidden>
+      <form class="b-zoek" id="pZoekForm" role="search">
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input type="search" id="pZoek" placeholder="Zoek: ps 42:5 of een woord" aria-label="Zoek een psalm of woord" enterkeyhint="search" autocomplete="off">
+      </form>
+      <div id="pInhoud" class="b-inhoud"></div>
+    </div>
+    <div id="formDeel" hidden>
+      <div id="fInhoud" class="b-inhoud"></div>
+    </div>
+  </section>
+</main>
+
+<div class="taalpop kerkpop" id="kerkPop" role="dialog" aria-label="Kerk kiezen" hidden>
+  <div class="taalpop-kop">Kerk</div>
+  <div class="taalpop-lijst" id="kerkPopLijst"></div>
+</div>
+<div class="taalpop" id="taalPop" role="dialog" aria-label="Taal kiezen" hidden>
+  <div class="taalpop-kop">Taal / Language</div>
+  <div class="taalpop-lijst" id="taalPopLijst"></div>
+  <label class="taalpop-orig" id="taalPopOrigRij" hidden><input type="checkbox" id="taalPopOrig"> Ook Nederlands tonen</label>
+  <p class="taalpop-noot" id="taalPopNoot" hidden>Vertalen staat op deze computer nog uit.</p>
+</div>
+<button class="naar-nieuw" id="naarNieuw" hidden>Nieuwe tekst ↓</button>
+
+<div class="scherm-hint" id="schermHint" hidden>
+  <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 1H7a2 2 0 00-2 2v18a2 2 0 002 2h10a2 2 0 002-2V3a2 2 0 00-2-2m0 18H7V5h10z"/></svg>
+  <span>Tik op het scherm om het scherm aan te laten.</span>
+  <button id="hintWeg" aria-label="Melding sluiten">✕</button>
+</div>
+
+<div class="kiezer" id="kiezer" role="dialog" aria-modal="true" aria-labelledby="kiezerTitel" hidden>
+  <div class="kiezer-paneel">
+    <h2 id="kiezerTitel" tabindex="-1" style="outline:none">Hoe wilt u meelezen?</h2>
+    <p>U kunt dit later altijd wijzigen in het menu.</p>
+    <div class="kiezer-taal"><label for="kiezerTaal">Taal / Language</label><select id="kiezerTaal"></select></div>
+    <div class="opties">
+      <button class="optie" data-weergave="klassiek">
+        <div class="voorbeeld k" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="tekst"><h3>Klassiek</h3><p>Alle tekst in blokken onder elkaar. U kunt terugscrollen.</p></div>
+      </button>
+      <button class="optie" data-weergave="doorlopend">
+        <span class="badge">Nieuw</span>
+        <div class="voorbeeld d" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <div class="tekst"><h3>Doorlopend</h3><p>Eén doorlopend verhaal in alinea's, zonder kaders en tijden. Leest als een boek.</p></div>
+      </button>
+      <button class="optie" data-weergave="focus">
+        <span class="badge">Rustig</span>
+        <div class="voorbeeld f" aria-hidden="true"><i class="h"></i><i class="m"></i></div>
+        <div class="tekst"><h3>Focus</h3><p>De nieuwste zin groot in het midden, eerdere tekst klein bovenaan.</p></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<dialog class="bijbel-venster" id="bijbelVenster" aria-labelledby="bvTitel">
+  <div class="bv-kop">
+    <div><small>Statenvertaling</small><h2 id="bvTitel">Bijbel</h2></div>
+    <button class="icon-btn" id="bvSluit" aria-label="Sluiten">
+      <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 6.4L17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z"/></svg></button>
+  </div>
+  <div class="bv-verzen lees" id="bvVerzen"></div>
+  <div class="bv-voet"><button id="bvVorige" hidden></button><button id="bvVerklaring" hidden>Verklaring</button><button id="bvWissel" hidden></button><button id="bvVolgende" hidden></button></div>
+</dialog>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const opslag = {
+  get(k, d) { try { const v = localStorage.getItem("ml-" + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("ml-" + k, JSON.stringify(v)); } catch (e) {} }
+};
+const instel = {
+  weergave: opslag.get("weergave", null), taal: opslag.get("taal", null), schaal: opslag.get("schaal", 1),
+  thema: opslag.get("thema", "auto"), origineel: opslag.get("origineel", false), schermAan: opslag.get("schermAan", true)
+};
+let talen = [{ code: "nl", naam: "Nederlands" }];
+let zinnen = [];            // {id, nl, tekst, t}
+const perId = new Map();
+let deel = "", status = { toestand: "opstarten" }, verbonden = false, bron = null;
+
+/* ---------- luisteren: het geluid van de dienst ---------- */
+let niet_actief = [];
+let luisterAan = false, luisterWil = false, luisterSpeler = null, luisterHerstel = null;
+instel.geluid = opslag.get("geluid", "gelijk");
+function luisterKnop(toestand) {
+  const k = $("luisterKnop"); if (!k) return;
+  k.setAttribute("aria-pressed", luisterWil ? "true" : "false");
+  k.classList.toggle("laden", toestand === "laden");
+  k.setAttribute("aria-label", luisterWil ? "Geluid stoppen" : "Geluid van de dienst afspelen");
+  $("luisterTekst").textContent = luisterWil ? (toestand === "laden" ? "Laden…" : "Stop") : "Luister";
+}
+function luisterStart() {
+  if (!instel.kerk) return;
+  luisterStop(true);
+  luisterWil = true; luisterKnop("laden");
+  const a = luisterSpeler = new Audio();
+  a.preload = "none";
+  a.src = "/api/luister?kerk=" + encodeURIComponent(instel.kerk) + (instel.geluid === "direct" ? "&direct=1" : "") + "&t=" + Date.now();
+  a.addEventListener("playing", () => { if (a === luisterSpeler) luisterKnop("speelt"); });
+  a.addEventListener("waiting", () => { if (a === luisterSpeler) luisterKnop("laden"); });
+  const opnieuw = () => {   // verbinding weg of uitzending even gestopt: na een paar seconden opnieuw
+    if (a !== luisterSpeler || !luisterWil) return;
+    luisterKnop("laden"); clearTimeout(luisterHerstel);
+    luisterHerstel = setTimeout(() => { if (luisterWil) luisterStart(); }, 4000);
+  };
+  a.addEventListener("error", opnieuw); a.addEventListener("ended", opnieuw); a.addEventListener("stalled", () => setTimeout(() => { if (a === luisterSpeler && a.paused === false && a.readyState < 3) opnieuw(); }, 15000));
+  a.play().catch(e => { if (e && e.name === "NotAllowedError") { luisterWil = false; luisterKnop(); toast("Tik nog een keer op Luister"); } });
+  if ("mediaSession" in navigator) {
+    const k = kerken.find(x => x.id === instel.kerk);
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({ title: k ? k.naam : "Kerkdienst", artist: "Meelezen", album: "Live" });
+      navigator.mediaSession.setActionHandler("pause", () => luisterStop());
+      navigator.mediaSession.setActionHandler("stop", () => luisterStop());
+      navigator.mediaSession.setActionHandler("play", () => luisterStart());
+    } catch (e) {}
+  }
+  const k = kerken.find(x => x.id === instel.kerk);
+  if (k && !k.geluid && status.toestand !== "live") toast("Er is nu geen uitzending. Het geluid start vanzelf als de dienst begint.");
+}
+function luisterStop(stil) {
+  clearTimeout(luisterHerstel);
+  if (luisterSpeler) { luisterSpeler.pause(); luisterSpeler.removeAttribute("src"); luisterSpeler.load(); luisterSpeler = null; }
+  if (!stil) { luisterWil = false; luisterKnop(); }
+}
+document.addEventListener("click", e => {
+  if (e.target.closest("#luisterKnop")) { luisterWil ? luisterStop() : luisterStart(); return; }
+  const g = e.target.closest("[data-geluid]"); if (!g) return;
+  instel.geluid = g.dataset.geluid; opslag.set("geluid", instel.geluid);
+  document.querySelectorAll("[data-geluid]").forEach(b => b.setAttribute("aria-pressed", b.dataset.geluid === instel.geluid));
+  if (luisterWil) luisterStart();
+});
+
+function toast(m) { const t = $("toast"); t.textContent = m; t.classList.add("toon"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("toon"), 2200); }
+function taalInfo(c) { return talen.find(t => t.code === c) || talen[0]; }
+const isVertaald = () => instel.taal && instel.taal !== "nl";
+
+/* ---------- weergave-instellingen ---------- */
+function pasToe() {
+  const r = document.documentElement;
+  r.style.setProperty("--schaal", instel.schaal);
+  if (instel.thema === "auto") r.removeAttribute("data-thema"); else r.dataset.thema = instel.thema;
+  const donker = instel.thema === "donker" || (instel.thema === "auto" && matchMedia("(prefers-color-scheme: dark)").matches);
+  document.querySelector('meta[name=theme-color]').content = donker ? "#0f1020" : "#ffffff";
+  $("grootteWaarde").textContent = Math.round(instel.schaal * 100) + "%";
+  document.querySelectorAll("[data-weergave]").forEach(b => b.matches(".seg button") && b.setAttribute("aria-pressed", b.dataset.weergave === instel.weergave));
+  document.querySelectorAll(".seg [data-thema]").forEach(b => b.setAttribute("aria-pressed", b.dataset.thema === instel.thema));
+  $("origRij").hidden = !isVertaald();
+  $("origineel").checked = instel.origineel;
+  $("schermAan").checked = instel.schermAan;
+  $("taalCode").textContent = (instel.taal || "nl").toUpperCase();
+  render();
+}
+function zet(k, v) { instel[k] = v; opslag.set(k, v); pasToe(); }
+
+/* ---------- menu ---------- */
+const lade = $("lade"), scrim = $("scrim"), menuKnop = $("menuKnop");
+function menu(open, focusOp) {
+  lade.classList.toggle("open", open); lade.inert = !open; scrim.hidden = !open;
+  menuKnop.setAttribute("aria-expanded", open); menuKnop.setAttribute("aria-label", open ? "Menu sluiten" : "Menu openen");
+  if (open) (focusOp || lade.querySelector("a")).focus(); else menuKnop.focus();
+}
+menuKnop.onclick = () => menu(!lade.classList.contains("open"));
+scrim.onclick = () => menu(false);
+$("ladeDicht").onclick = () => menu(false);
+/* kerknaam bovenaan: direct wisselen van kerk */
+function kerkPop(open) {
+  const p = $("kerkPop"), k = $("titel");
+  if (!k.classList.contains("wisselbaar")) return;
+  if (open === undefined) open = p.hidden;
+  if (!open) { if (!p.hidden) { p.hidden = true; k.setAttribute("aria-expanded", "false"); } return; }
+  taalPop(false);
+  const l = $("kerkPopLijst"); l.replaceChildren();
+  const rij = (id, naam, sub, toestand, uit) => {
+    const b = document.createElement("button"); b.type = "button";
+    b.setAttribute("role", "menuitemradio"); b.setAttribute("aria-checked", id === instel.kerk);
+    const punt = el("span", "kp-punt"); punt.dataset.s = toestand || "";
+    const tk = el("span", "kp-tekst"); tk.append(el("span", "", naam), el("small", "", sub));
+    const c = el("span", "code", id === instel.kerk ? "" : "");
+    b.append(punt, tk, c);
+    if (uit) b.disabled = true; else b.onclick = () => { kerkPop(false); if (id !== instel.kerk) { kiesKerk(id); toast(naam); } };
+    l.append(b);
+  };
+  for (const kk of kerken) rij(kk.id, kk.naam, STATUS_TEKST[kk.toestand] || kk.plaats || "", kk.toestand, false);
+  for (const kk of niet_actief) rij(kk.id, kk.naam, "Wordt nu niet gevolgd", "", true);
+  p.hidden = false; k.setAttribute("aria-expanded", "true");
+  (l.querySelector('[aria-checked="true"]') || l.firstChild)?.focus();
+  fetch("/api/kerken", { cache: "no-store" }).then(r => r.json()).then(d => {   // status vers ophalen
+    kerken = d; if (!p.hidden) [...l.children].forEach((b, i) => { const kk = kerken[i]; if (kk) { b.querySelector(".kp-punt").dataset.s = kk.toestand; b.querySelector("small").textContent = STATUS_TEKST[kk.toestand] || ""; } });
+  }).catch(() => {});
+}
+$("titel").onclick = e => { e.stopPropagation(); kerkPop(); };
+document.addEventListener("click", e => { if (!$("kerkPop").hidden && !e.target.closest("#kerkPop")) kerkPop(false); });
+document.addEventListener("keydown", e => {
+  if ($("kerkPop").hidden) return;
+  if (e.key === "Escape") { kerkPop(false); $("titel").focus(); }
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    const k = [...$("kerkPopLijst").children].filter(b => !b.disabled), i = k.indexOf(document.activeElement);
+    k[(i + (e.key === "ArrowDown" ? 1 : k.length - 1)) % k.length]?.focus(); e.preventDefault();
+  }
+});
+
+/* wereldbol: taal direct kiezen in een klein lijstje, zonder het menu */
+function taalPop(open) {
+  const p = $("taalPop"), k = $("taalKnop");
+  if (open === undefined) open = p.hidden;
+  if (open) {
+    const l = $("taalPopLijst"); l.replaceChildren();
+    for (const ti of talen) {
+      const b = document.createElement("button");
+      b.type = "button"; b.setAttribute("role", "menuitemradio");
+      b.setAttribute("aria-checked", ti.code === (instel.taal || "nl"));
+      const n = document.createElement("span"); n.textContent = ti.naam; n.dir = "auto";
+      const c = document.createElement("span"); c.className = "code"; c.textContent = ti.code.toUpperCase();
+      b.append(n, c);
+      b.onclick = () => { kiesTaal(ti.code); taalPop(false); };
+      l.append(b);
+    }
+    $("taalPopOrigRij").hidden = !isVertaald();
+    $("taalPopOrig").checked = instel.origineel;
+    $("taalPopNoot").hidden = talen.length > 1;
+    kerkPop(false);
+    p.hidden = false; k.setAttribute("aria-expanded", "true");
+    (l.querySelector('[aria-checked="true"]') || l.firstChild)?.focus();
+  } else if (!p.hidden) {
+    p.hidden = true; k.setAttribute("aria-expanded", "false");
+  }
+}
+$("taalKnop").onclick = e => { e.stopPropagation(); taalPop(); };
+$("taalPopOrig").onchange = e => zet("origineel", e.target.checked);
+document.addEventListener("click", e => { if (!$("taalPop").hidden && !e.target.closest("#taalPop")) taalPop(false); });
+document.addEventListener("keydown", e => {
+  if ($("taalPop").hidden) return;
+  if (e.key === "Escape") { taalPop(false); $("taalKnop").focus(); }
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    const k = [...$("taalPopLijst").children], i = k.indexOf(document.activeElement);
+    k[(i + (e.key === "ArrowDown" ? 1 : k.length - 1)) % k.length]?.focus(); e.preventDefault();
+  }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && lade.classList.contains("open")) menu(false); });
+lade.querySelectorAll(".seg [data-weergave]").forEach(b => b.onclick = () => zet("weergave", b.dataset.weergave));
+lade.querySelectorAll(".seg [data-thema]").forEach(b => b.onclick = () => zet("thema", b.dataset.thema));
+$("kleiner").onclick = () => zet("schaal", Math.max(0.8, +(instel.schaal - 0.1).toFixed(2)));
+$("groter").onclick = () => zet("schaal", Math.min(1.8, +(instel.schaal + 0.1).toFixed(2)));
+$("origineel").onchange = e => zet("origineel", e.target.checked);
+$("schermAan").onchange = e => { zet("schermAan", e.target.checked); e.target.checked ? schermVragen() : schermLos(); };
+
+function kiesTaal(code) {
+  if (code === instel.taal) return;
+  zet("taal", code);
+  $("taal").value = code; $("kiezerTaal").value = code;
+  const ti = taalInfo(code);
+  toast(ti.naam);
+  verbind();
+}
+$("taal").onchange = e => kiesTaal(e.target.value);
+$("kiezerTaal").onchange = e => kiesTaal(e.target.value);
+
+/* ---------- pagina's ---------- */
+function pagina() { return location.pathname.startsWith("/bijbel") ? "bijbel" : "live"; }
+let kerkKiezen = false;
+function toonPagina() {
+  const p = pagina();
+  $("paginaKerk").hidden = !kerkKiezen;
+  $("pil").hidden = kerkKiezen;
+  $("paginaLive").hidden = kerkKiezen || p !== "live"; $("paginaBijbel").hidden = kerkKiezen || p !== "bijbel";
+  if (kerkKiezen) { $("naarNieuw").hidden = true; return; }
+  lade.querySelectorAll(".nav").forEach(a => a.dataset.pagina === p ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current"));
+  if (p === "bijbel") { zetBDeel(bDeel); laadBijbel(); }
+  pil();
+  render();
+}
+lade.querySelectorAll(".nav").forEach(a => a.onclick = e => {
+  e.preventDefault(); menu(false); scrollTo(0, 0);
+  if (a.dataset.pagina === "kerk") { toonKerkkeuze(); return; }
+  kerkKiezen = false;
+  history.pushState(null, "", a.getAttribute("href")); toonPagina();
+});
+
+$("bvSluit").onclick = () => venster().close();
+/* Live-knopje bovenaan: met één tik terug naar de preek (vanuit Bijbel, Matthew Henry of het bijbelvenster) */
+$("pil").onclick = () => {
+  if (venster().open) venster().close();
+  menu(false);
+  if (pagina() !== "live") {
+    history.pushState(null, "", instel.kerk ? "/?kerk=" + encodeURIComponent(instel.kerk) : "/");
+    toonPagina();
+  }
+  requestAnimationFrame(() => instel.weergave === "focus" ? scrollTo(0, 0) : naarBodem("auto"));
+};
+venster().addEventListener("click", e => { if (e.target === venster()) venster().close(); });   // tik naast het venster
+
+/* ---------- startscherm: kerk kiezen ---------- */
+let kerken = [], kerkTimer = null;
+const STATUS_TEKST = { live: "Nu live", "geen-uitzending": "Geen uitzending", verbinden: "Verbinden…", opstarten: "Verbinden…", "niet-ingesteld": "Nog niet beschikbaar" };
+const kerkIcoon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 2h2v3h3v2h-3v2.2l6 3.3V22h-6v-4a2 2 0 00-4 0v4H3v-9.5l6-3.3V7H6V5h3V2z"/></svg>';
+function renderKerken() {
+  $("kerkLijst").replaceChildren(...kerken.map(k => {
+    const li = document.createElement("li"), b = document.createElement("button");
+    b.className = "kerk-knop"; b.setAttribute("aria-current", k.id === instel.kerk);
+    const ico = document.createElement("span"); ico.className = "kerk-ico"; ico.innerHTML = kerkIcoon;
+    const tekst = document.createElement("span"); tekst.className = "kerk-tekst";
+    const naam = document.createElement("strong"); naam.textContent = k.naam;
+    const plaats = document.createElement("span"); plaats.textContent = k.plaats || "";
+    const st = document.createElement("span"); st.className = "kerk-status"; st.dataset.s = k.toestand;
+    st.textContent = STATUS_TEKST[k.toestand] || "";
+    tekst.append(naam, plaats, st);
+    b.append(ico, tekst);
+    b.insertAdjacentHTML("beforeend", '<svg class="kerk-pijl" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.6 16.6L13.2 12 8.6 7.4 10 6l6 6-6 6z"/></svg>');
+    b.setAttribute("aria-label", k.naam + ", " + (STATUS_TEKST[k.toestand] || ""));
+    b.onclick = () => kiesKerk(k.id);
+    li.append(b); return li;
+  }));
+}
+async function ververKerken() {
+  clearTimeout(kerkTimer);
+  try { kerken = await (await fetch("/api/kerken", { cache: "no-store" })).json(); renderKerken(); } catch (e) {}
+  if (kerkKiezen) kerkTimer = setTimeout(ververKerken, 15000);
+}
+function toonKerkkeuze() {
+  kerkKiezen = true; if (bron) { bron.close(); bron = null; }
+  if (!location.search.includes("kies")) history.pushState(null, "", "/?kies");
+  toonPagina(); renderKerken(); ververKerken();
+  document.title = "Preek meelezen"; $("titelNaam").textContent = "Preek meelezen";
+  setTimeout(() => $("startTitel").focus({ preventScroll: true }), 50);
+}
+function zetKerkKop() {
+  const k = kerken.find(x => x.id === instel.kerk);
+  const naam = k ? k.naam : "Meelezen";
+  $("titelNaam").textContent = naam; document.title = naam + " – meelezen";
+  $("titel").classList.toggle("wisselbaar", kerken.length > 1 || niet_actief.length > 0);
+  $("navKerkNaam").textContent = k ? "Nu: " + k.naam : "";
+}
+function kiesKerk(id) {
+  const anders = id !== instel.kerk;
+  instel.kerk = id; opslag.set("kerk", id);
+  kerkKiezen = false; clearTimeout(kerkTimer);
+  zetKerkKop();
+  if (anders) { dienst = null; gekozen = 0; if (luisterWil) luisterStart(); }
+  history.pushState(null, "", "/?kerk=" + encodeURIComponent(id));
+  toonPagina(); pil(); verbind(); scrollTo(0, 0);
+  if (!opslag.get("weergave", null)) openKiezer();
+}
+addEventListener("popstate", () => {
+  const q = new URLSearchParams(location.search);
+  if (q.has("kies") && kerken.length > 1) { if (!kerkKiezen) toonKerkkeuze(); return; }
+  if (kerkKiezen && instel.kerk) { kerkKiezen = false; verbind(); zetKerkKop(); }
+  toonPagina();
+});
+
+/* ---------- keuzescherm ---------- */
+const kiezer = $("kiezer");
+function openKiezer() {
+  kiezer.hidden = false; document.body.style.overflow = "hidden";
+  $("kiezerTitel").focus();
+}
+kiezer.querySelectorAll(".optie").forEach(b => b.onclick = () => {
+  zet("weergave", b.dataset.weergave);
+  kiezer.hidden = true; document.body.style.overflow = "";
+  schermVragen();
+});
+kiezer.addEventListener("keydown", e => {
+  if (e.key !== "Tab") return;
+  const f = [...kiezer.querySelectorAll("select,button")], a = f[0], z = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); }
+  else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
+});
+
+/* ---------- scherm aan laten ---------- */
+let wekslot = null;
+async function schermVragen() {
+  if (!instel.schermAan || wekslot) return;
+  if (!("wakeLock" in navigator)) {
+    const n = $("schermNotitie");
+    n.hidden = false;
+    n.textContent = window.isSecureContext ? "Deze browser kan het scherm niet aan houden. Zet de automatische schermvergrendeling tijdelijk uit."
+      : "Scherm aan laten werkt alleen via een https-adres.";
+    $("schermHint").hidden = true; return;
+  }
+  try {
+    wekslot = await navigator.wakeLock.request("screen");
+    wekslot.addEventListener("release", () => { wekslot = null; });
+    $("schermHint").hidden = true;
+  } catch (e) { /* lukt pas na een tik */ }
+}
+function schermLos() { if (wekslot) wekslot.release(); wekslot = null; }
+document.addEventListener("pointerdown", () => schermVragen(), { passive: true });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") schermVragen(); });
+$("hintWeg").onclick = e => { e.stopPropagation(); $("schermHint").hidden = true; opslag.set("hintGezien", true); };
+
+/* ---------- live-verbinding ---------- */
+function verbind() {
+  if (bron) bron.close();
+  verbonden = false; zinnen = []; perId.clear(); deel = "";
+  if (!instel.kerk || kerkKiezen) return;
+  bron = new EventSource("/api/live?taal=" + encodeURIComponent(instel.taal || "nl") + "&kerk=" + encodeURIComponent(instel.kerk));
+  const op = (n, f) => bron.addEventListener(n, e => f(JSON.parse(e.data)));
+  bron.onopen = () => { verbonden = true; pil(); };
+  bron.onerror = () => { verbonden = false; pil(); };
+  op("status", s => { status = s; pil(); render(); });
+  op("geschiedenis", d => { zinnen = []; perId.clear(); d.zinnen.forEach(voegToe); deel = d.deel || ""; render(true); naarBodem("auto"); });
+  op("reset", () => { zinnen = []; perId.clear(); deel = ""; render(true); });
+  op("zin", z => {
+    const bijBodem = bijDeBodem();
+    if (perId.has(z.id)) { Object.assign(perId.get(z.id), z); render(true); return; }   // bijv. orgel → samenzang
+    voegToe(z); if (!z.soort) deel = ""; render(false, z.id); volg(bijBodem);
+  });
+  op("deel", d => { const bijBodem = bijDeBodem(); deel = d.nl; renderDeel(); volg(bijBodem); });
+  op("vertaling", v => {
+    const z = perId.get(v.id); if (!z) return;
+    z.tekst = v.tekst;
+    document.querySelectorAll('.zin[data-id="' + v.id + '"]').forEach(el => { el.replaceChildren(zinInhoud(z)); el.classList.remove("wacht-op"); el.removeAttribute("lang"); el.removeAttribute("dir"); });
+    if (instel.weergave === "focus") renderFocus();
+  });
+}
+function voegToe(z) { const o = { id: z.id, nl: z.nl, tekst: z.tekst, t: z.t, soort: z.soort, refs: z.refs }; zinnen.push(o); perId.set(o.id, o); }
+
+/* muziek: labels per taal */
+const MUZIEK = {
+  nl: { zang: "Samenzang", orgel: "Orgelspel" }, en: { zang: "Congregational singing", orgel: "Organ music" },
+  de: { zang: "Gemeindegesang", orgel: "Orgelspiel" }, fr: { zang: "Chant de l'assemblée", orgel: "Orgue" },
+  es: { zang: "Canto congregacional", orgel: "Música de órgano" }, pt: { zang: "Canto congregacional", orgel: "Música de órgão" },
+  pl: { zang: "Śpiew wspólny", orgel: "Muzyka organowa" }, ro: { zang: "Cântare comună", orgel: "Muzică de orgă" },
+  uk: { zang: "Спільний спів", orgel: "Органна музика" }, ru: { zang: "Общее пение", orgel: "Органная музыка" },
+  tr: { zang: "Cemaat ilahisi", orgel: "Org müziği" }, ar: { zang: "ترنيم جماعي", orgel: "موسيقى الأرغن" },
+  fa: { zang: "سرود جمعی", orgel: "موسیقی ارگ" }, id: { zang: "Nyanyian jemaat", orgel: "Musik organ" },
+  zh: { zang: "会众唱诗", orgel: "管风琴音乐" }
+};
+const muziekLabel = z => "♪ " + ((MUZIEK[instel.taal] || MUZIEK.en)[z.soort] || z.nl.replace(/^♪\s*/, ""));
+
+function pil() {
+  const p = $("pil"), t = $("pilTekst");
+  let s = "", tekst = "";
+  if (!verbonden) { s = "fout"; tekst = "Verbinding herstellen…"; }
+  else if (status.toestand === "live") { s = status.detail === "achterstand" ? "vertraagd" : "live"; tekst = s === "live" ? "Live" : "Live (vertraagd)"; }
+  else if (status.toestand === "verbinden" || status.toestand === "opstarten") { tekst = "Verbinden…"; }
+  else { tekst = "Geen uitzending"; }
+  p.dataset.s = s; t.textContent = tekst;
+  p.classList.toggle("terug", pagina() !== "live");   // in de Bijbel: laten zien dat dit terug naar de preek gaat
+}
+
+/* ---------- tekst tonen ---------- */
+const tekstVan = z => z.soort ? muziekLabel(z) : isVertaald() ? (z.tekst || z.nl) : z.nl;
+const wachtOp = z => !z.soort && isVertaald() && !z.tekst;
+/* tekst van een zin, met bijbelverwijzingen als links */
+function bijbelKnop(r, klein) {
+  const a = document.createElement("a");
+  a.href = "#"; a.className = klein ? "bl-label" : "bl";
+  a.dataset.ref = JSON.stringify({ boek: r.boek, h: r.h, v: r.v, label: r.label, zingen: !!r.zingen });
+  a.setAttribute("aria-label", "Bijbeltekst " + r.label + " openen");
+  return a;
+}
+/* bij een psalm: naast de Bijbel ook een link naar het psalmboek (of andersom bij 'we zingen') */
+let psalmboekAan = false;
+fetch("/api/psalmen", { cache: "no-store" }).then(r => r.json()).then(d => { psalmboekAan = !!(d.psalmen && d.psalmen.length); }).catch(() => {});
+function isPsalm(r) { return r && r.boek === "Psalmen" && r.h >= 1 && r.h <= 150; }
+function psalmKnop(r) {
+  if (!isPsalm(r) || !psalmboekAan) return null;
+  const naarBoek = !r.zingen;   // Bijbelverwijzing -> extra link naar de berijming, en omgekeerd
+  // versnummers van de berijming en van de Bijbel verschillen: alleen doorgeven waar ze bij horen
+  const a = bijbelKnop({ boek: r.boek, h: r.h, v: [], label: "Psalm " + r.h, zingen: naarBoek }, true);
+  a.classList.add("psalm-label");
+  a.textContent = naarBoek ? "♪ Psalmboek" : "📖 Bijbel";
+  a.setAttribute("aria-label", naarBoek ? "Psalm " + r.h + " in het psalmboek openen" : "Psalm " + r.h + " in de Bijbel openen");
+  return a;
+}
+function metPsalm(frag, r) { const k = psalmKnop(r); if (k) frag.append(" ", k); }
+function zinInhoud(z, orig) {
+  const frag = document.createDocumentFragment();
+  const tekst = orig ? z.nl : tekstVan(z);
+  const refs = z.soort ? [] : (z.refs || []);
+  const nlTekst = orig || tekst === z.nl;   // posities horen bij de Nederlandse tekst
+  if (!refs.length) { frag.append(tekst + " "); return frag; }
+  if (nlTekst) {
+    let pos = 0;
+    for (const r of refs) {
+      if (r.van < pos) continue;
+      frag.append(tekst.slice(pos, r.van));
+      const a = bijbelKnop(r); a.textContent = tekst.slice(r.van, r.tot);
+      if (r.soort === "citaat") a.classList.add("citaat");
+      frag.append(a);
+      if (r.soort === "citaat" && !orig) { const l = bijbelKnop(r, true); l.textContent = r.label; frag.append(" ", l); }
+      if (!orig) metPsalm(frag, r);
+      pos = r.tot;
+    }
+    frag.append(tekst.slice(pos) + " ");
+  } else {
+    frag.append(tekst + " ");
+    for (const r of refs) { const l = bijbelKnop(r, true); l.textContent = "📖 " + r.label; frag.append(l, " "); metPsalm(frag, r); frag.append(" "); }
+  }
+  return frag;
+}
+function zinSpan(z, nieuw, orig) {
+  const s = document.createElement("span");
+  s.className = "zin" + (!orig && wachtOp(z) ? " wacht-op" : "") + (nieuw ? " nieuw" : "");
+  s.dataset.id = orig ? "" : z.id;
+  s.append(zinInhoud(z, orig));
+  if (!orig && wachtOp(z)) { s.lang = "nl"; s.dir = "ltr"; }
+  return s;
+}
+
+/* bijbelvenster */
+function venster() { return $("bijbelVenster"); }
+let vensterRef = null;
+async function openBijbel(ref, hoofdstuk) {
+  vensterRef = ref;
+  if (ref.zingen && !hoofdstuk) {   // gezongen psalm: de berijming tonen als die er is
+    try {
+      const r = await fetch("/api/psalm?nr=" + ref.h);
+      if (r.ok) {
+        const d = await r.json(), licht = new Set(ref.v || []);
+        $("bvTitel").textContent = d.titel + (ref.v && ref.v.length ? " : " + ref.v.join(", ") : "");
+        venster().querySelector(".bv-kop small").textContent = "Psalmen 1773";
+        $("bvVerzen").replaceChildren(...d.verzen.map(v => versBlok(v, licht.has(v.nr))));
+        $("bvVorige").hidden = $("bvVolgende").hidden = $("bvVerklaring").hidden = true;
+        $("bvWissel").hidden = false; $("bvWissel").textContent = "📖 Bijbeltekst";
+        $("bvWissel").onclick = () => openBijbel({ boek: "Psalmen", h: ref.h, v: [], label: "Psalmen " + ref.h });
+        if (!venster().open) venster().showModal();
+        const eerste = licht.size ? $("pv" + Math.min(...licht)) : null;
+        $("bvVerzen").scrollTop = eerste ? Math.max(0, eerste.offsetTop - $("bvVerzen").offsetTop - 40) : 0;
+        return;
+      }
+    } catch (e) {}
+  }
+  venster().querySelector(".bv-kop small").textContent = "Statenvertaling";
+  const h0 = hoofdstuk || ref.h;
+  $("bvWissel").hidden = !(isPsalm({ boek: ref.boek, h: h0 }) && psalmboekAan);
+  $("bvWissel").textContent = "♪ Psalmboek";
+  $("bvWissel").onclick = () => openBijbel({ boek: "Psalmen", h: h0, v: [], label: "Psalm " + h0, zingen: true });
+  $("bvVerklaring").hidden = !verklaringAan;
+  $("bvVerklaring").onclick = () => naarVerklaring(ref.boek, hoofdstuk || ref.h, hoofdstuk && hoofdstuk !== ref.h ? [] : ref.v);
+  const h = hoofdstuk || ref.h;
+  $("bvTitel").textContent = h === ref.h ? ref.label : ref.boek + " " + h;
+  $("bvVerzen").replaceChildren(Object.assign(document.createElement("p"), { className: "sub", textContent: "Laden…" }));
+  if (!venster().open) venster().showModal();
+  try {
+    const r = await fetch("/api/bijbel?boek=" + encodeURIComponent(ref.boek) + "&h=" + h);
+    if (!r.ok) throw new Error();
+    const d = await r.json(), licht = new Set(h === ref.h ? ref.v : []);
+    $("bvVerzen").replaceChildren(...d.verzen.map(v => {
+      const p = document.createElement("p"); p.className = "vers" + (licht.has(v.nr) ? " licht" : ""); p.id = "bv" + v.nr;
+      p.append(versNummer(ref.boek, h, v.nr), v.tekst); return p;
+    }));
+    $("bvVorige").hidden = !d.vorige; $("bvVolgende").hidden = !d.volgende;
+    $("bvVorige").onclick = () => openBijbel(ref, d.vorige);
+    $("bvVolgende").onclick = () => openBijbel(ref, d.volgende);
+    $("bvVorige").textContent = "‹ " + ref.boek + " " + d.vorige; $("bvVolgende").textContent = ref.boek + " " + d.volgende + " ›";
+    const eerste = licht.size ? $("bv" + Math.min(...licht)) : null;
+    const lijst = $("bvVerzen");
+    lijst.scrollTop = eerste ? Math.max(0, eerste.offsetTop - lijst.offsetTop - 60) : 0;
+  } catch (e) {
+    $("bvVerzen").replaceChildren(Object.assign(document.createElement("p"), { className: "sub", textContent: "Deze tekst kon niet worden geladen." }));
+  }
+}
+document.addEventListener("click", e => {
+  const a = e.target.closest("[data-ref]"); if (!a) return;
+  e.preventDefault(); openBijbel(JSON.parse(a.dataset.ref));
+});
+function zetRichting(el) {
+  const ti = taalInfo(instel.taal || "nl");
+  el.lang = ti.code; el.dir = ti.rtl ? "rtl" : "auto";
+}
+function groepen() {
+  const g = []; let huidig = null;
+  for (const z of zinnen) {
+    if (z.soort) { g.push({ zinnen: [z], laatst: z.t, muziek: true }); huidig = null; continue; }
+    if (!huidig || z.t - huidig.laatst > 7000 || huidig.zinnen.length >= (instel.weergave === "doorlopend" ? 6 : 4)) { huidig = { zinnen: [], laatst: z.t }; g.push(huidig); }
+    huidig.zinnen.push(z); huidig.laatst = z.t;
+  }
+  return g;
+}
+function notenRij() {
+  const d = document.createElement("div"); d.className = "noten"; d.setAttribute("aria-hidden", "true");
+  ["♪", "♫", "♩", "♬", "♪", "♫", "♩"].forEach((n, i) => { const s = document.createElement("span"); s.textContent = n; s.style.animationDelay = (i * 0.22) + "s"; d.append(s); });
+  return d;
+}
+function maakKaart(groep, nieuwId) {
+  if (groep.muziek) {
+    const z = groep.zinnen[0], art = document.createElement("article");
+    art.className = "kaart muziek" + (z === zinnen[zinnen.length - 1] ? " bezig" : "");
+    art.setAttribute("role", "note");
+    const p = document.createElement("p"); p.textContent = muziekLabel(z); zetRichting(p);
+    if (instel.weergave !== "doorlopend") {
+      const tijd = document.createElement("span"); tijd.className = "tijd";
+      tijd.textContent = new Date(z.t).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" });
+      art.append(tijd);
+    }
+    art.append(p, notenRij());
+    return art;
+  }
+  const art = document.createElement("article"); art.className = "kaart";
+  const tijd = document.createElement("span"); tijd.className = "tijd";
+  tijd.textContent = new Date(groep.zinnen[0].t).toLocaleTimeString("nl-NL", { hour: "2-digit", minute: "2-digit" });
+  const p = document.createElement("p"); zetRichting(p);
+  groep.zinnen.forEach(z => p.append(zinSpan(z, z.id === nieuwId)));
+  if (instel.weergave === "doorlopend") art.append(p); else art.append(tijd, p);
+  if (isVertaald() && instel.origineel) {
+    const o = document.createElement("p"); o.className = "orig"; o.lang = "nl";
+    groep.zinnen.forEach(z => o.append(zinSpan(z, false, true)));
+    art.append(o);
+  }
+  return art;
+}
+function zetDownloads() {
+  const heeftTekst = zinnen.some(z => !z.soort);
+  $("downloadMenu").hidden = !heeftTekst || kerkKiezen;
+  document.querySelectorAll(".dl-knop").forEach(a => {
+    a.href = "/api/download?kerk=" + encodeURIComponent(instel.kerk || "") + "&taal=" + encodeURIComponent(instel.taal || "nl")
+      + "&formaat=" + a.dataset.formaat;
+  });
+}
+document.addEventListener("click", e => {
+  const a = e.target.closest(".dl-knop"); if (!a) return;
+  zetDownloads();
+  toast(isVertaald() ? "Bestand wordt gemaakt; de vertaling kan even duren…" : "Bestand wordt gemaakt…");
+  a.classList.add("bezig"); setTimeout(() => a.classList.remove("bezig"), 4000);
+});
+function render(alles, nieuwId) {
+  zetDownloads();
+  if (pagina() !== "live" || instel.weergave === "focus") $("naarNieuw").hidden = true;
+  if (pagina() !== "live") return;
+  const leeg = zinnen.length === 0;
+  $("wacht").hidden = !leeg;
+  $("klassiek").hidden = leeg || instel.weergave === "focus";
+  $("klassiek").classList.toggle("doorlopend", instel.weergave === "doorlopend");
+  $("focus").hidden = leeg || instel.weergave !== "focus";
+  $("afgelopen").hidden = leeg || !(status.toestand === "geen-uitzending");
+  if (leeg) {
+    const geen = status.toestand === "geen-uitzending";
+    $("wachtTitel").textContent = geen ? "Er is nu geen uitzending" : "Welkom";
+    $("wachtTekst").textContent = !verbonden ? "Verbinden…" : geen ? "De tekst verschijnt hier zodra de dienst begint." : "Wachten tot er gesproken wordt…";
+    $("golf").classList.toggle("stil", geen || !verbonden);
+    return;
+  }
+  if (instel.weergave === "focus") return renderFocus();
+  const k = $("kaarten");
+  if (alles !== false || !nieuwId) {
+    k.replaceChildren(...groepen().map(g => maakKaart(g)));
+  } else {
+    const g = groepen(), laatste = g[g.length - 1];
+    const vorigeKaart = k.lastElementChild;
+    if (vorigeKaart) vorigeKaart.classList.remove("bezig");
+    const kaart = maakKaart(laatste, nieuwId);
+    if (laatste.zinnen.length > 1 && k.lastElementChild) { kaart.style.animation = "none"; k.lastElementChild.replaceWith(kaart); }
+    else k.append(kaart);
+  }
+  renderDeel();
+}
+function renderFocus() {
+  const laatste = zinnen[zinnen.length - 1]; if (!laatste) return;
+  const h = $("historie");
+  const eerder = zinnen.slice(-40, -1);
+  h.hidden = eerder.length === 0;
+  zetRichting(h);
+  h.replaceChildren(...eerder.map(z => { const p = document.createElement("p"); if (z.soort) p.className = "muziek"; p.append(zinSpan(z)); return p; }));
+  h.scrollTop = h.scrollHeight;
+  const f = $("focusZin");
+  if (f.dataset.id !== String(laatste.id)) { f.style.animation = "none"; f.offsetWidth; f.style.animation = ""; }
+  f.dataset.id = laatste.id; zetRichting(f);
+  f.replaceChildren(zinInhoud(laatste)); f.classList.toggle("zin", true); f.classList.toggle("wacht-op", wachtOp(laatste));
+  f.classList.toggle("muziek", !!laatste.soort);
+  if (laatste.soort) f.append(notenRij());
+  $("focusOrig").hidden = !(isVertaald() && instel.origineel) || !!laatste.soort;
+  $("focusOrig").textContent = laatste.nl;
+  renderDeel();
+}
+function renderDeel() {
+  const toon = !!deel && !isVertaald() && zinnen.length > 0;
+  for (const id of ["deelK", "deelF"]) { $(id).hidden = !toon; $(id).textContent = deel; }
+  if (!isVertaald() && deel && zinnen.length === 0) { $("wachtTekst").textContent = deel; }
+}
+
+/* automatisch meescrollen */
+const bijDeBodem = () => innerHeight + scrollY >= document.documentElement.scrollHeight - 160;
+function volg(bijBodem) {
+  if (instel.weergave === "focus" || pagina() !== "live") return;
+  if (bijBodem) { scrollTo({ top: document.documentElement.scrollHeight, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); $("naarNieuw").hidden = true; }
+  else $("naarNieuw").hidden = false;
+}
+addEventListener("scroll", () => { if (bijDeBodem()) $("naarNieuw").hidden = true; }, { passive: true });
+function naarBodem(gedrag) { if (instel.weergave !== "focus" && pagina() === "live") scrollTo({ top: document.documentElement.scrollHeight, behavior: gedrag }); $("naarNieuw").hidden = true; }
+$("naarNieuw").onclick = () => naarBodem("smooth");
+
+/* ---------- bijbel bij de dienst ---------- */
+let dienst = null, gekozen = 0, bijbelTimer = null;
+async function laadBijbel() {
+  clearTimeout(bijbelTimer);
+  try {
+    const r = await fetch("/api/dienst?kerk=" + encodeURIComponent(instel.kerk || ""), { cache: "no-store" });
+    const d = await r.json();
+    if (JSON.stringify(d) !== JSON.stringify(dienst)) { dienst = d; renderBijbel(); }
+  } catch (e) { if (!dienst) $("blad").textContent = "De gegevens konden niet worden geladen."; }
+  if (pagina() === "bijbel") bijbelTimer = setTimeout(laadBijbel, 60000);
+}
+/* ---------- hele bijbel: bladeren en zoeken ---------- */
+let bDeel = opslag.get("bDeel", "bijbel"), boeken = null, bPlek = opslag.get("bPlek", { scherm: "boeken" });
+function zetBDeel(d) {
+  const heeftDienst = !!(dienst && (dienst.onderdelen || []).length);
+  if (d === "dienst" && !heeftDienst) d = "bijbel";
+  bDeel = d; opslag.set("bDeel", d);
+  $("knopDienst").hidden = !heeftDienst;
+  document.querySelectorAll("[data-bdeel]").forEach(b => b.setAttribute("aria-pressed", b.dataset.bdeel === d));
+  $("dienstDeel").hidden = d !== "dienst"; $("bijbelDeel").hidden = d !== "bijbel"; $("psalmDeel").hidden = d !== "psalmen";
+  $("formDeel").hidden = d !== "formulieren";
+  if (d === "bijbel") toonBijbelPlek();
+  if (d === "psalmen") toonPsalmPlek();
+  if (d === "formulieren") toonFormPlek();
+}
+
+/* ---------- formulieren ---------- */
+let fPlek = opslag.get("fPlek", { scherm: "overzicht" });
+function gaNaarForm(plek) { fPlek = plek; opslag.set("fPlek", plek); toonFormPlek(); scrollTo(0, 0); }
+async function toonFormPlek() {
+  const doel = $("fInhoud");
+  let o; try { o = await (await fetch("/api/formulieren", { cache: "no-store" })).json(); } catch (e) { o = { formulieren: [] }; }
+  if (!o.formulieren.length) { doel.replaceChildren(el("p", "b-melding", "De formulieren zijn nog niet opgehaald. Voer op de computer formulieren-ophalen.bat uit.")); return; }
+  if (fPlek.scherm === "lezen" && o.formulieren.some(f => f.id === fPlek.id)) return toonFormulier(fPlek.id);
+  const lijst = el("div", "p-gezangen");
+  o.formulieren.forEach(f => { const b = el("button", "", f.naam); b.type = "button"; b.onclick = () => gaNaarForm({ scherm: "lezen", id: f.id }); lijst.append(b); });
+  doel.replaceChildren(el("h2", "b-testament", "Liturgische formulieren"), lijst, el("p", "p-bron", "Klassieke formulieren (Statenvertaling)"));
+}
+async function toonFormulier(id) {
+  const doel = $("fInhoud");
+  const kop = el("div", "b-kop"); kop.append(terugKnop("Alle formulieren", () => gaNaarForm({ scherm: "overzicht" })));
+  const titel = el("h2", "", "Formulier"); titel.style.margin = "0 0 12px";
+  const blok = el("article", "b-tekst lees f-tekst"); blok.append(el("p", "b-melding", "Laden…"));
+  doel.replaceChildren(kop, titel, blok);
+  try {
+    const r = await fetch("/api/formulier?id=" + encodeURIComponent(id)); if (!r.ok) throw new Error();
+    const f = await r.json();
+    titel.textContent = f.titel;
+    // korte regels zonder punt aan het eind zijn tussenkopjes
+    blok.replaceChildren(...f.alineas.map(a => el("p", a.length < 70 && !/[.;:,!?]$/.test(a) ? "f-kop" : "", a)));
+  } catch (e) { blok.replaceChildren(el("p", "b-melding", "Dit formulier kon niet worden geladen.")); }
+}
+
+/* ---------- psalmboek ---------- */
+let psalmOverzicht = null, pPlek = opslag.get("pPlek", { scherm: "overzicht" });
+async function haalPsalmen() {
+  if (psalmOverzicht && psalmOverzicht.psalmen.length) return psalmOverzicht;
+  try { psalmOverzicht = await (await fetch("/api/psalmen", { cache: "no-store" })).json(); } catch (e) { psalmOverzicht = { psalmen: [], gezangen: [] }; }
+  return psalmOverzicht;
+}
+function gaNaarPsalm(plek) { pPlek = plek; opslag.set("pPlek", plek); toonPsalmPlek(); scrollTo(0, 0); }
+function versBlok(v, licht) {
+  const d = el("div", "p-vers" + (licht ? " licht" : "")); d.id = "pv" + v.nr;
+  d.append(el("b", "", v.nr), el("div", "", v.tekst)); return d;
+}
+async function toonPsalmPlek() {
+  const doel = $("pInhoud"), o = await haalPsalmen(), p = pPlek || { scherm: "overzicht" };
+  if (!o.psalmen.length) { doel.replaceChildren(el("p", "b-melding", "Het psalmboek is nog niet opgehaald. Voer op de laptop psalmen-ophalen.bat uit.")); return; }
+  if (p.scherm === "lezen") return toonPsalm(p);
+  if (p.scherm === "zoek" && p.q) return zoekPsalmen(p.q);
+  const grid = el("div", "p-nummers");
+  o.psalmen.forEach(ps => { const b = el("button", "", ps.nr); b.type = "button"; b.setAttribute("aria-label", "Psalm " + ps.nr); b.onclick = () => gaNaarPsalm({ scherm: "lezen", nr: ps.nr }); grid.append(b); });
+  const delen = [el("h2", "b-testament", "Psalmen"), grid];
+  if (o.gezangen.length) {
+    const lijst = el("div", "p-gezangen");
+    o.gezangen.forEach(g => { const b = el("button", "", g.titel); b.type = "button"; b.onclick = () => gaNaarPsalm({ scherm: "lezen", gezang: g.nr }); lijst.append(b); });
+    delen.push(el("h2", "b-testament", "Enige gezangen"), lijst);
+  }
+  doel.replaceChildren(...delen);
+}
+async function toonPsalm(p) {
+  const doel = $("pInhoud"), o = await haalPsalmen();
+  const kop = el("div", "b-kop"); kop.append(terugKnop("Alle psalmen", () => gaNaarPsalm({ scherm: "overzicht" })));
+  const titel = el("h2", "", p.gezang ? "Gezang" : "Psalm " + p.nr); titel.style.margin = "0 0 12px";
+  const blok = el("article", "b-tekst lees"); blok.append(el("p", "b-melding", "Laden…"));
+  doel.replaceChildren(kop, titel, blok);
+  try {
+    const r = await fetch(p.gezang ? "/api/psalm?gezang=" + p.gezang : "/api/psalm?nr=" + p.nr);
+    if (!r.ok) throw new Error();
+    const d = await r.json(), licht = new Set(p.v || []);
+    titel.textContent = d.titel;
+    blok.replaceChildren(...d.verzen.map(v => versBlok(v, licht.has(v.nr))));
+    const nav = el("div", "b-nav");
+    if (!p.gezang) {
+      const nrs = o.psalmen.map(x => x.nr), i = nrs.indexOf(p.nr);
+      if (i > 0) { const b = el("button", "", "‹ Psalm " + nrs[i - 1]); b.type = "button"; b.onclick = () => gaNaarPsalm({ scherm: "lezen", nr: nrs[i - 1] }); nav.append(b); }
+      if (i < nrs.length - 1) { const b = el("button", "", "Psalm " + nrs[i + 1] + " ›"); b.type = "button"; b.onclick = () => gaNaarPsalm({ scherm: "lezen", nr: nrs[i + 1] }); nav.append(b); }
+    } else {
+      if (p.gezang > 1) { const b = el("button", "", "‹ Vorige"); b.type = "button"; b.onclick = () => gaNaarPsalm({ scherm: "lezen", gezang: p.gezang - 1 }); nav.append(b); }
+      if (p.gezang < o.gezangen.length) { const b = el("button", "", "Volgende ›"); b.type = "button"; b.onclick = () => gaNaarPsalm({ scherm: "lezen", gezang: p.gezang + 1 }); nav.append(b); }
+    }
+    doel.append(nav, el("p", "p-bron", "Psalmen in de berijming van 1773"));
+    if (licht.size) $("pv" + Math.min(...licht))?.scrollIntoView({ block: "center" });
+  } catch (e) { blok.replaceChildren(el("p", "b-melding", "Deze psalm kon niet worden geladen.")); }
+}
+async function zoekPsalmen(q) {
+  const doel = $("pInhoud"); $("pZoek").value = q;
+  doel.replaceChildren(el("p", "b-melding", "Zoeken…"));
+  let d; try { d = await (await fetch("/api/psalmen/zoek?q=" + encodeURIComponent(q))).json(); } catch (e) { d = { resultaten: [] }; }
+  if (d.ref) return gaNaarPsalm({ scherm: "lezen", nr: d.ref.nr, v: d.ref.v });
+  const kop = el("div", "b-kop"); kop.append(terugKnop("Alle psalmen", () => { $("pZoek").value = ""; gaNaarPsalm({ scherm: "overzicht" }); }));
+  const aantal = el("p", "b-melding", d.resultaten.length ? (d.meer ? "Meer dan 60 verzen gevonden; de eerste 60:" : d.resultaten.length + (d.resultaten.length === 1 ? " vers" : " verzen") + " gevonden") : "Niets gevonden voor “" + q + "”.");
+  const items = d.resultaten.map(r => {
+    const b = el("button", "b-resultaat"); b.type = "button";
+    b.append(el("strong", "", r.titel + " : " + r.v));
+    const s = el("span"); s.style.whiteSpace = "pre-line"; s.textContent = r.tekst; b.append(s);
+    b.onclick = () => gaNaarPsalm(r.soort === "psalm" ? { scherm: "lezen", nr: r.nr, v: [r.v] } : { scherm: "lezen", gezang: r.nr, v: [r.v] });
+    return b;
+  });
+  doel.replaceChildren(kop, aantal, ...items);
+}
+$("pZoekForm").onsubmit = e => { e.preventDefault(); const q = $("pZoek").value.trim(); if (q) { $("pZoek").blur(); gaNaarPsalm({ scherm: "zoek", q }); } };
+document.querySelectorAll("[data-bdeel]").forEach(b => b.onclick = () => zetBDeel(b.dataset.bdeel));
+async function haalBoeken() {
+  if (boeken && boeken.length > 5) return boeken;   // volledige bijbel: bewaren
+  try { boeken = await (await fetch("/api/bijbel/boeken", { cache: "no-store" })).json(); } catch (e) { boeken = []; }
+  return boeken;
+}
+const el = (tag, cls, tekst) => { const e = document.createElement(tag); if (cls) e.className = cls; if (tekst != null) e.textContent = tekst; return e; };
+function terugKnop(tekst, actie) {
+  const b = el("button", "b-terug"); b.type = "button";
+  b.innerHTML = '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.4 7.4L14 6l-6 6 6 6 1.4-1.4L10.8 12z"/></svg>';
+  b.append(tekst); b.onclick = actie; return b;
+}
+function gaNaar(plek) { bPlek = plek; opslag.set("bPlek", plek); toonBijbelPlek(); scrollTo(0, 0); }
+async function toonBijbelPlek() {
+  const doel = $("bInhoud"), lijst = await haalBoeken(), p = bPlek || { scherm: "boeken" };
+  if (!lijst.length) { doel.replaceChildren(el("p", "b-melding", "De bijbel is nog niet geladen. Voer op de laptop bijbel-ophalen.bat uit.")); return; }
+  if (p.scherm === "hoofdstukken" && lijst.some(b => b.naam === p.boek)) {
+    const boek = lijst.find(b => b.naam === p.boek);
+    const kop = el("div", "b-kop"); kop.append(terugKnop("Boeken", () => gaNaar({ scherm: "boeken" })));
+    const grid = el("div", "b-hoofdstukken");
+    for (let h = 1; h <= boek.hoofdstukken; h++) { const b = el("button", "", h); b.type = "button"; b.setAttribute("aria-label", boek.naam + " " + h); b.onclick = () => gaNaar({ scherm: "lezen", boek: boek.naam, h }); grid.append(b); }
+    doel.replaceChildren(kop, el("h2", "", boek.naam), grid);
+    doel.querySelector("h2").style.margin = "0 0 12px";
+    return;
+  }
+  if (p.scherm === "lezen" && lijst.some(b => b.naam === p.boek)) return toonHoofdstuk(p);
+  if (p.scherm === "zoek" && p.q) return zoekBijbel(p.q);
+  // boekenoverzicht
+  const delen = [];
+  for (const [titel, nt] of [["Oude Testament", false], ["Nieuwe Testament", true]]) {
+    const groep = lijst.filter(b => b.nt === nt); if (!groep.length) continue;
+    delen.push(el("h2", "b-testament", titel));
+    const grid = el("div", "b-boeken");
+    groep.forEach(b => { const k = el("button", "", b.naam); k.type = "button"; k.onclick = () => b.hoofdstukken === 1 ? gaNaar({ scherm: "lezen", boek: b.naam, h: 1 }) : gaNaar({ scherm: "hoofdstukken", boek: b.naam }); grid.append(k); });
+    delen.push(grid);
+  }
+  doel.replaceChildren(...delen);
+}
+async function toonHoofdstuk(p) {
+  const doel = $("bInhoud"), lijst = await haalBoeken();
+  const kop = el("div", "b-kop");
+  kop.append(terugKnop(p.boek, () => gaNaar({ scherm: "hoofdstukken", boek: p.boek })));
+  const titel = el("h2", "", p.boek + " " + p.h);
+  const blok = el("article", "b-tekst lees"); blok.append(el("p", "b-melding", "Laden…"));
+  doel.replaceChildren(kop, titel, blok); titel.style.margin = "0 0 12px";
+  if (verklaringAan) {
+    const seg = el("div", "seg vk-keuze"); seg.setAttribute("role", "group"); seg.setAttribute("aria-label", "Tekst of verklaring");
+    for (const [label, vk] of [["Bijbeltekst", false], ["Verklaring (M. Henry)", true]]) {
+      const b = el("button", "", label); b.type = "button"; b.setAttribute("aria-pressed", !!p.verklaring === vk);
+      b.onclick = () => gaNaar({ ...p, verklaring: vk }); seg.append(b);
+    }
+    titel.after(seg);
+  }
+  if (p.verklaring && verklaringAan) return toonVerklaring(p, blok, lijst);
+  try {
+    const d = await (await fetch("/api/bijbel?boek=" + encodeURIComponent(p.boek) + "&h=" + p.h)).json();
+    const licht = new Set(p.v || []);
+    blok.replaceChildren(...d.verzen.map(v => { const q = el("p", "vers" + (licht.has(v.nr) ? " licht" : "")); q.id = "bl" + v.nr;
+      q.append(versNummer(p.boek, p.h, v.nr), v.tekst); return q; }));
+    if (verklaringAan) blok.prepend(el("p", "vk-hint", "Tik op een versnummer voor de uitleg van Matthew Henry."));
+    // vorige / volgende, ook naar het vorige of volgende boek
+    const i = lijst.findIndex(b => b.naam === p.boek), nav = el("div", "b-nav");
+    const vorige = p.h > 1 ? { boek: p.boek, h: p.h - 1 } : i > 0 ? { boek: lijst[i - 1].naam, h: lijst[i - 1].hoofdstukken } : null;
+    const volgende = p.h < lijst[i].hoofdstukken ? { boek: p.boek, h: p.h + 1 } : i < lijst.length - 1 ? { boek: lijst[i + 1].naam, h: 1 } : null;
+    if (vorige) { const b = el("button", "", "‹ " + vorige.boek + " " + vorige.h); b.type = "button"; b.onclick = () => gaNaar({ scherm: "lezen", ...vorige }); nav.append(b); }
+    if (volgende) { const b = el("button", "", volgende.boek + " " + volgende.h + " ›"); b.type = "button"; b.onclick = () => gaNaar({ scherm: "lezen", ...volgende }); nav.append(b); }
+    doel.append(nav);
+    if (licht.size) $("bl" + Math.min(...licht))?.scrollIntoView({ block: "center" });
+  } catch (e) { blok.replaceChildren(el("p", "b-melding", "Dit hoofdstuk kon niet worden geladen.")); }
+}
+/* bijbelverklaring (Matthew Henry) */
+let verklaringAan = false;
+function naarVerklaring(boek, h, v) {
+  if (venster().open) venster().close();
+  kerkKiezen = false; bDeel = "bijbel"; opslag.set("bDeel", "bijbel");
+  bPlek = { scherm: "lezen", boek, h, v: v || [], verklaring: true }; opslag.set("bPlek", bPlek);
+  if (pagina() !== "bijbel") history.pushState(null, "", "/bijbel");
+  toonPagina(); scrollTo(0, 0);
+}
+function versNummer(boek, h, nr) {
+  if (!verklaringAan) return el("sup", "", nr);
+  const b = el("button", "vers-nr", nr); b.type = "button";
+  b.setAttribute("aria-label", "Uitleg van Matthew Henry bij " + boek + " " + h + ":" + nr);
+  b.title = "Uitleg bij vers " + nr;
+  b.onclick = e => { e.stopPropagation(); naarVerklaring(boek, h, [nr]); };
+  return b;
+}
+fetch("/api/verklaring/aan").then(r => r.json()).then(d => { verklaringAan = !!d.aan; }).catch(() => {});
+function tekstMetLinks(tekst, refs) {
+  const p = el("p"); let pos = 0;
+  for (const r of refs || []) {
+    if (r.van < pos) continue;
+    p.append(tekst.slice(pos, r.van));
+    const a = bijbelKnop(r); a.textContent = tekst.slice(r.van, r.tot); p.append(a); metPsalm(p, r); pos = r.tot;
+  }
+  p.append(tekst.slice(pos)); return p;
+}
+async function toonVerklaring(p, blok, lijst) {
+  blok.className = "b-tekst vk lees";
+  try {
+    const r = await fetch("/api/verklaring?boek=" + encodeURIComponent(p.boek) + "&h=" + p.h);
+    if (!r.ok) throw new Error();
+    const d = await r.json(), vers = (p.v || [])[0];
+    const delen = [];
+    if (d.boekinleiding && d.boekinleiding.length) {
+      const det = el("details", "vk-deel"); det.append(el("summary", "", "Inleiding op " + p.boek));
+      d.boekinleiding.forEach(a => det.append(el("p", "", a))); delen.push(det);
+    }
+    d.delen.forEach((deel, i) => {
+      const det = el("details", "vk-deel"), sum = el("summary");
+      sum.append(deel.van ? (deel.van === deel.tot ? "Vers " + deel.van : "Verzen " + deel.van + "–" + deel.tot) : "Inleiding op het hoofdstuk");
+      det.append(sum);
+      deel.tekst.forEach((a, j) => det.append(tekstMetLinks(a, (deel.refs || [])[j])));
+      if (vers ? (deel.van <= vers && vers <= deel.tot) : (!deel.van || (i === 0))) det.open = true;
+      if (vers && deel.van <= vers && vers <= deel.tot) { det.classList.add("vk-doel"); sum.append(el("span", "vk-bij", "bij vers " + vers)); }
+      delen.push(det);
+    });
+    delen.push(el("p", "p-bron", "Matthew Henry, Verklaring van de Bijbel (Nederlandse uitgave, digitale editie Ben Fresco)"));
+    blok.replaceChildren(...delen);
+    const open = vers ? blok.querySelector("details.vk-doel") : null;
+    if (open) open.scrollIntoView({ block: "start" });
+  } catch (e) {
+    blok.replaceChildren(el("p", "b-melding", "Bij dit hoofdstuk is geen verklaring gevonden."));
+  }
+}
+
+async function zoekBijbel(q) {
+  const doel = $("bInhoud");
+  $("bZoek").value = q;
+  doel.replaceChildren(el("p", "b-melding", "Zoeken…"));
+  let d;
+  try { d = await (await fetch("/api/bijbel/zoek?q=" + encodeURIComponent(q))).json(); } catch (e) { d = { resultaten: [] }; }
+  if (d.ref) return gaNaar({ scherm: "lezen", boek: d.ref.boek, h: d.ref.h, v: d.ref.v });
+  const kop = el("div", "b-kop"); kop.append(terugKnop("Boeken", () => { $("bZoek").value = ""; gaNaar({ scherm: "boeken" }); }));
+  const aantal = el("p", "b-melding", d.resultaten.length ? (d.meer ? "Meer dan 100 verzen gevonden; de eerste 100:" : d.resultaten.length + (d.resultaten.length === 1 ? " vers" : " verzen") + " gevonden")
+    : "Niets gevonden voor “" + q + "”.");
+  const woorden = q.toLowerCase().split(/\s+/).filter(Boolean).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const re = woorden.length ? new RegExp("(" + woorden.join("|") + ")", "gi") : null;
+  const items = d.resultaten.map(r => {
+    const b = el("button", "b-resultaat"); b.type = "button";
+    b.append(el("strong", "", r.boek + " " + r.h + ":" + r.v));
+    const s = el("span"); (re ? r.tekst.split(re) : [r.tekst]).forEach((stuk, i) => s.append(i % 2 ? el("mark", "", stuk) : stuk));
+    b.append(s); b.onclick = () => gaNaar({ scherm: "lezen", boek: r.boek, h: r.h, v: [r.v] }); return b;
+  });
+  doel.replaceChildren(kop, aantal, ...items);
+}
+$("bZoekForm").onsubmit = e => { e.preventDefault(); const q = $("bZoek").value.trim(); if (q) { $("bZoek").blur(); gaNaar({ scherm: "zoek", q }); } };
+
+function renderBijbel() {
+  zetBDeel(bDeel);
+  const d = dienst || {}, delen = d.onderdelen || [];
+  $("bijbelTitel").textContent = d.titel || "Bij de dienst";
+  const datum = d.datum ? new Date(d.datum + "T12:00").toLocaleDateString("nl-NL", { weekday: "long", day: "numeric", month: "long" }) : "";
+  $("bijbelSub").textContent = [datum, d.voorganger].filter(Boolean).join(" · ");
+  const tabs = $("tabs"), blad = $("blad");
+  if (!delen.length) { tabs.replaceChildren(); blad.textContent = d.fout || "Voor deze dienst zijn nog geen lezingen klaargezet."; return; }
+  gekozen = Math.min(gekozen, delen.length - 1);
+  tabs.replaceChildren(...delen.map((o, i) => {
+    const b = document.createElement("button");
+    b.role = "tab"; b.id = "tab" + i; b.setAttribute("aria-selected", i === gekozen); b.tabIndex = i === gekozen ? 0 : -1;
+    b.textContent = o.verwijzing || o.titel || "Onderdeel " + (i + 1);
+    b.onclick = () => { gekozen = i; renderBijbel(); b.focus(); };
+    b.onkeydown = e => { const n = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0; if (n) { gekozen = (i + n + delen.length) % delen.length; renderBijbel(); $("tab" + gekozen).focus(); } };
+    return b;
+  }));
+  blad.setAttribute("aria-labelledby", "tab" + gekozen);
+  const o = delen[gekozen], h = document.createElement("h2"), sub = document.createElement("p");
+  h.textContent = o.titel || o.verwijzing || ""; sub.className = "sub"; sub.textContent = o.titel && o.verwijzing ? o.verwijzing : "";
+  const inhoud = [h]; if (sub.textContent) inhoud.push(sub);
+  const licht = new Set(o.uitlichten || []);
+  if (o.verzen && o.verzen.length) {
+    o.verzen.forEach(v => { const p = document.createElement("p"); p.className = "vers" + (licht.has(v.nr) ? " licht" : "");
+      const s = document.createElement("sup"); s.textContent = v.nr; p.append(s, v.tekst); inhoud.push(p); });
+  } else if (o.vraag || o.antwoord) {
+    if (o.vraag) { const p = document.createElement("p"); p.className = "vraag"; p.textContent = o.vraag; inhoud.push(p); }
+    if (o.antwoord) { const p = document.createElement("p"); p.textContent = o.antwoord; inhoud.push(p); }
+  } else if (o.liedverzen && o.liedverzen.length) {
+    o.liedverzen.forEach(v => inhoud.push(versBlok(v, false)));
+  } else if (o.tekst) {
+    const p = document.createElement("p"); p.className = "vrije"; p.textContent = o.tekst; inhoud.push(p);
+  } else {
+    const p = document.createElement("p"); p.className = "sub"; p.textContent = o.soort === "lied" ? "Zie het liedboek of het scherm in de kerk." : "De tekst is niet beschikbaar."; inhoud.push(p);
+  }
+  blad.replaceChildren(...inhoud);
+}
+
+/* ---------- opstarten ---------- */
+async function start() {
+  try {
+    const r = await fetch("/api/instellingen"); const c = await r.json();
+    talen = c.talen; kerken = c.kerken || [];
+    luisterAan = !!c.luisteren; niet_actief = c.niet_actief || [];
+  } catch (e) {}
+  const q = new URLSearchParams(location.search);
+  const gevraagd = q.get("kerk");
+  instel.kerk = opslag.get("kerk", null);
+  if (gevraagd && kerken.some(k => k.id === gevraagd)) { instel.kerk = gevraagd; opslag.set("kerk", gevraagd); }
+  const uit = (niet_actief || []).find(k => k.id === gevraagd);
+  if (uit) setTimeout(() => toast(`De livestream van ${uit.naam} wordt nu niet gevolgd.`), 600);
+  if (!kerken.some(k => k.id === instel.kerk)) instel.kerk = kerken.length === 1 ? kerken[0].id : null;
+  $("navKerk").hidden = kerken.length < 2;
+  $("luisterKnop").hidden = $("geluidInstel").hidden = !luisterAan;
+  document.querySelectorAll("[data-geluid]").forEach(b => b.setAttribute("aria-pressed", b.dataset.geluid === instel.geluid));
+  kerkKiezen = kerken.length > 1 && (!instel.kerk || q.has("kies"));
+  if (!instel.taal || !talen.some(t => t.code === instel.taal)) {
+    const voorkeur = (navigator.languages || [navigator.language || "nl"]).map(l => l.slice(0, 2));
+    instel.taal = voorkeur.find(l => talen.some(t => t.code === l)) || "nl";
+  }
+  for (const sel of [$("taal"), $("kiezerTaal")]) {
+    sel.replaceChildren(...talen.map(t => new Option(t.naam, t.code)));
+    sel.value = instel.taal;
+  }
+  if (!instel.weergave) { instel.weergave = "klassiek"; if (!kerkKiezen) openKiezer(); }
+  if (kerkKiezen) { history.replaceState(null, "", "/?kies"); toonKerkkeuze(); } else zetKerkKop();
+  if (instel.schermAan && "wakeLock" in navigator && !opslag.get("hintGezien", false)) $("schermHint").hidden = false;
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", pasToe);
+  pasToe(); toonPagina(); pil(); verbind();
+}
+start();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+# Voorbeeld. Bij de eerste start wordt hiervan config.toml gemaakt; pas die aan, niet dit bestand.
+# Meelezen — instellingen
+# Na een wijziging de server opnieuw starten.
+
+[algemeen]
+kerknaam = "Meelezen"            # staat bovenaan in de app
+poort = 8080                     # telefoons openen http://<adres-van-deze-computer>:8080
+
+# ---------------------------------------------------------------------------
+# De kerken. Op de telefoon kiest men eerst een kerk (bij één kerk wordt dat overgeslagen).
+# stream_url kan zijn:
+#   - kerkdienstgemist.nl:  "https://p-audio-....audio.kerkdienstgemist.nl/<nummer>?ssl=1&type=live.mp3"
+#   - YouTube-kanaal:       "https://www.youtube.com/@KanaalNaam/live"
+# id = korte naam zonder spaties; ook te gebruiken in een QR-code:  https://<adres>/?kerk=gergem
+# Bijbel bij de dienst per kerk: data/dienst-<id>.json  (anders data/dienst.json)
+# ---------------------------------------------------------------------------
+[[kerk]]
+id = "gergem"
+naam = "Ger. Gem. Middelharnis"
+plaats = "Middelharnis"
+stream_url = ""   # vul het adres van de livestream in (kerkdienstgemist .mp3 of YouTube /live)
+
+[[kerk]]
+id = "hhg"
+naam = "HHG Middelharnis-Sommelsdijk"
+plaats = "Middelharnis-Sommelsdijk"
+stream_url = ""   # vul het adres van de livestream in
+
+[audio]
+# Hoe vaak opnieuw proberen als er geen uitzending is (seconden)
+opnieuw_proberen = 20
+# Zoveel minuten na het laatste geluid wordt de dienst afgesloten: opname (mp3) en tekst worden
+# definitief opgeslagen. Komt er daarna weer geluid, dan begint een nieuwe dienst.
+afsluiten_na_minuten = 5
+# Opknippen van het geluid bij pauzes in de spraak (seconden)
+min_fragment = 4.0
+max_fragment = 14.0
+pauze = 0.6
+stilte_drempel = 0.01            # 0–1; hoger = minder gevoelig voor achtergrondgeluid
+
+[opslag]
+# Map op de NAS waar per dienst de opname en de tekst worden bewaard.
+# Windows:  map = '\\NAS\kerk\diensten'      (let op: enkele aanhalingstekens)
+# Linux/Pi: map = "/mnt/nas/diensten"        (NAS eerst koppelen, zie LEESMIJ)
+# Leeg laten = niets opslaan. (INSTALLEREN-NIEUWE-COMPUTER.bat vult hier de map opnames in.)
+map = ''
+opname = true                    # geluid opslaan als mp3
+tekst = true                     # uitgeschreven tekst opslaan (.txt en .srt)
+bewaar_dagen = 0                 # oudere diensten automatisch verwijderen; 0 = alles bewaren
+
+[spraak]
+# "auto"           = zelf kiezen: NVIDIA-videokaart → op deze computer; anders OpenAI (als er een
+#                    sleutel is); anders op de processor met een licht model
+# "openai"         = via internet, ca. € 0,35 per uur geluid; beste keuze voor een oudere laptop
+# "faster-whisper" = gratis op deze computer (videokaart of processor)
+# "demo"           = speelt een voorbeeldpreek af om de app te testen, zonder geluid
+engine = "auto"
+model = "auto"                   # "auto" = large-v3 op een videokaart (te traag? dan large-v3-turbo), small op de processor
+                                 # processor: "base" (snel, minder goed) of "small"
+apparaat = "auto"                # "auto", "cuda" (videokaart) of "cpu" (processor)
+rekentype = "auto"               # videokaart: "auto" kiest zelf (Blackwell: float16); of "float16", "bfloat16", "float32"
+openai_model = "gpt-4o-transcribe"
+# Namen en woorden die vaak voorkomen; helpt de spraakherkenning ze goed te schrijven
+woordenlijst = "Heere, Jezus Christus, Heilige Geest, gemeente, Schriftlezing, Psalm, gedachtenis, gedachtenismaaltijd, Heilig Avondmaal, avondmaalgangers, belijden, goedertierenheid, ijdellijk, toorn, zondaar, heirscharen, desgelijks, een iegelijk, noch, krachtiglijk, Middelharnis"
+# Voorgelezen teksten (Bijbel, psalmen, formulieren, Onze Vader, Twaalf Artikelen) automatisch in de
+# officiële tekst zetten als de app ze herkent. Eigen teksten: data/vaste-teksten/*.txt
+vaste_teksten = true
+
+[muziek]
+# Orgelspel en samenzang herkennen en als "♪ Orgelspel" / "♪ Samenzang" tonen
+# (in plaats van ze door de spraakherkenning te halen). Afstellen met muziektest.bat.
+herkennen = true
+min_aanhoudend = 0.3             # hoger = minder snel 'muziek'
+zang_min_vlakheid = 0.025        # hoger = vaker 'orgel', lager = vaker 'zang'
+spraak_niveau = 0.045            # geluidsniveau van de spreker; past zich tijdens de dienst vanzelf aan
+
+[luisteren]
+# Het geluid van de dienst afspelen in de app (knop "Luister" bovenaan)
+aan = true
+kbps = 128                       # geluidskwaliteit; 96 is zuiniger met internet bij veel luisteraars
+vertraging = 6                   # seconden: zo loopt het geluid ongeveer gelijk met de tekst
+
+[vertaling]
+# "openai" = alle talen, "deepl" = zeer goede kwaliteit maar niet alle talen, "uit" = geen vertaling
+engine = "openai"
+openai_model = "gpt-4o-mini"
+# Gratis en zonder internet vertalen kan ook met Ollama op deze computer (de installatie regelt dit
+# bij een NVIDIA-videokaart):
+#   engine = "openai", api_url = "http://localhost:11434/v1", openai_model = "gemma3:12b"
+# Kleinere videokaart (minder dan 12 GB): openai_model = "gemma3:4b"
+api_url = "https://api.openai.com/v1"
+talen = ["en", "de", "fr", "es", "pt", "pl", "ro", "uk", "ru", "tr", "ar", "fa", "ti", "so", "zh", "id"]
+
+[sleutels]
+# Of zet ze als omgevingsvariabele OPENAI_API_KEY / DEEPL_API_KEY
+openai = ""
+deepl = ""

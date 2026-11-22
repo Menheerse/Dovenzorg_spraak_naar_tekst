@@ -1,0 +1,13 @@
+{
+  "titel": "Morgendienst",
+  "datum": "2026-11-15",
+  "voorganger": "ds. A. de Vries",
+  "onderdelen": [
+    { "soort": "lezing", "titel": "Schriftlezing", "verwijzing": "Psalm 23" },
+    { "soort": "lezing", "titel": "Tekst voor de preek", "verwijzing": "Johannes 10:11-14", "uitlichten": [11, 14] },
+    { "soort": "lied", "titel": "Psalm 23 : 1 en 3", "tekst": "" },
+    { "soort": "catechismus", "titel": "Heidelbergse Catechismus, Zondag 1",
+      "vraag": "Wat is uw enige troost, beide in het leven en sterven?",
+      "antwoord": "Dat ik met lichaam en ziel, beide in het leven en sterven, niet mijn, maar mijns getrouwen Zaligmakers Jezus Christus eigen ben, Die met Zijn dierbaar bloed voor al mijn zonden volkomenlijk betaald, en mij uit alle heerschappij des duivels verlost heeft; en alzo bewaart, dat zonder de wil mijns hemelsen Vaders geen haar van mijn hoofd vallen kan, ja ook, dat mij alles tot mijn zaligheid dienen moet. Daarom verzekert Hij mij ook door Zijn Heilige Geest van het eeuwige leven, en maakt mij van harte gewillig en bereid, voortaan voor Hem te leven." }
+  ]
+}
